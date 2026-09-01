@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients - Invoice Generator</title>
+    <meta name="description" content="Manage your client list for easy invoicing. Add, edit, and organize client details.">
+    <link rel="stylesheet" href="css/style.css?v=1785774996000">
+    <script>
+        (function(){ var m=localStorage.getItem('theme-mode'); if(m) document.documentElement.setAttribute('data-theme',m); })();
+    </script>
+    <style>
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 2rem 3rem;
+            flex: 1;
+        }
+        /* Show this page instantly, without the entrance animation */
+        .dashboard-container,
+        .main-content {
+            animation: none !important;
+        }
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            transition: color 0.2s;
+        }
+        .nav-back:hover { color: var(--text-main); }
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .page-header h1 {
+            font-size: 2.75rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 0.75rem;
+            color: var(--text-main);
+        }
+        .page-header p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        @media (max-width: 768px) {
+            .history-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .history-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .history-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        .history-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            background: var(--bg-card);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .toolbar-search {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        .toolbar-search input {
+            width: 100%;
+            padding: 0.625rem 0.625rem 0.625rem 2.25rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .toolbar-search input:focus { border-color: var(--accent); }
+        .toolbar-search::before {
+            content: "🔍";
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+        .toolbar-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        .table-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .data-table tbody tr:hover { background: var(--bg-secondary); }
+        .client-contact {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        .row-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        .empty-state h3 { margin-bottom: 0.5rem; color: var(--text-main); }
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .pagination-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            width: 90%;
+            max-width: 480px;
+        }
+        .modal-box h2 {
+            margin: 0 0 1.5rem;
+            font-size: 1.25rem;
+            color: var(--text-main);
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.375rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus { border-color: var(--accent); }
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .data-table th:nth-child(4),
+            .data-table td:nth-child(4) { display: none; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+    <noscript><div style="padding:2rem;text-align:center;background:#fee2e2;color:#dc2626;">JavaScript is required to use this application. Please enable JavaScript in your browser.</div></noscript>
+    <a href="#mainContent" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:99999;padding:0.75rem 1.5rem;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;border-radius:var(--radius-sm);">Skip to main content</a>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 style="cursor: pointer;" onclick="window.location.href='index.html';" title="Go to Home">Invoice Generator</h2>
+                <button class="btn btn-icon sidebar-close-btn" onclick="document.getElementById('sidebar').classList.remove('open')" aria-label="Close sidebar">×</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="sidebar-link" data-page="home">
+                    <span class="sidebar-icon" aria-hidden="true">📊</span>
+                    <span>Home</span>
+                </a>
+                <a href="index.html#invoice" class="sidebar-link" data-page="new-invoice">
+                    <span class="sidebar-icon" aria-hidden="true">📝</span>
+                    <span>New Invoice</span>
+                </a>
+                <a href="history.html" class="sidebar-link" data-page="history">
+                    <span class="sidebar-icon" aria-hidden="true">📋</span>
+                    <span>History</span>
+                </a>
+                <a href="clients.html" class="sidebar-link active" data-page="clients">
+                    <span class="sidebar-icon" aria-hidden="true">👥</span>
+                    <span>Clients</span>
+                </a>
+                <a href="templates.html" class="sidebar-link" id="navTemplates" data-page="templates">
+                    <span class="sidebar-icon" aria-hidden="true">🏢</span>
+                    <span data-i18n="nav.templates">Templates</span>
+                </a>
+                <a href="pricing.html" class="sidebar-link" data-page="pricing">
+                    <span class="sidebar-icon" aria-hidden="true">💎</span>
+                    <span>Pricing</span>
+                </a>
+                <div class="sidebar-divider"></div>
+                <div id="sidebarAuthSection">
+                    <button class="btn btn-primary sidebar-btn" onclick="window.app && window.app.showAuthModal && window.app.showAuthModal()" data-i18n="nav.signIn">Sign In / Sign Up</button>
+                </div>
+            </nav>
+        </aside>
+
+        <div class="dashboard-content">
+            <header class="header bg-transparent border-none">
+                <div class="header-content">
+                    <div class="logo-section">
+                        <button class="btn btn-icon sidebar-toggle-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" title="Menu">☰</button>
+                        <div class="logo-text">
+                            <h1>Client Manager</h1>
+                            <p>Add, edit, and organize your client list</p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-icon theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+                            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"/>
+                                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                            </svg>
+                            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content page-container" id="mainContent">
+                <a href="index.html" class="nav-back">← Back to Generator</a>
+
+                <div class="page-header">
+                    <h1>Manage Clients</h1>
+                    <p>Keep your client information organized for quick invoice creation.</p>
+                </div>
+
+                <div class="history-grid" id="historyGrid">
+                    <div class="history-card">
+                        <div class="history-label">Total Clients</div>
+                        <div class="history-value" id="totalClients">0</div>
+                    </div>
+                    <div class="history-card">
+                        <div class="history-label">With Email</div>
+                        <div class="history-value" id="withEmail">0</div>
+                    </div>
+                    <div class="history-card">
+                        <div class="history-label">With Phone</div>
+                        <div class="history-value" id="withPhone">0</div>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <div class="toolbar-search">
+                        <input type="text" id="searchInput" placeholder="Search by name, email, or phone...">
+                    </div>
+                    <div class="toolbar-actions">
+                        <button class="btn btn-primary" id="addClientBtn">+ Add Client</button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Client Name</th>
+                                <th>Contact Info</th>
+                                <th>Address</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" id="pagination">
+                    <span>Showing <strong id="pageStart">0</strong> to <strong id="pageEnd">0</strong> of <strong id="pageTotal">0</strong> clients</span>
+                    <div class="pagination-actions">
+                        <button class="btn btn-secondary btn-sm" id="prevPageBtn" disabled>Previous</button>
+                        <button class="btn btn-secondary btn-sm" id="nextPageBtn" disabled>Next</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="clientModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-box">
+            <h2 id="modalTitle">Add Client</h2>
+            <div class="form-group">
+                <label for="clientName">Client Name *</label>
+                <input type="text" id="clientName" placeholder="Acme Corp" required>
+            </div>
+            <div class="form-group">
+                <label for="clientEmail">Email</label>
+                <input type="email" id="clientEmail" placeholder="contact@acme.com">
+            </div>
+            <div class="form-group">
+                <label for="clientPhone">Phone</label>
+                <input type="tel" id="clientPhone" placeholder="+1 (555) 123-4567">
+            </div>
+            <div class="form-group">
+                <label for="clientAddress">Address</label>
+                <input type="text" id="clientAddress" placeholder="123 Main St, City, State">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modalCancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="modalSaveBtn">Save Client</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    function toggleTheme() {
+        var currentTheme = document.documentElement.getAttribute('data-theme');
+        var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme-mode', newTheme);
+    }
+    (function() {
+        const STORAGE_KEY = 'invoice-generator-clients';
+        const PAGE_SIZE = 10;
+        let allClients = [];
+        let filteredClients = [];
+        let currentPage = 1;
+        let editingId = null;
+
+        function getClients() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+            catch { return []; }
+        }
+
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;', '`': '&#96;' };
+            return String(text).replace(/[&<>"'`]/g, m => map[m]);
+        }
+
+        function saveClients(clients) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            return new Date(dateStr).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+        }
+
+        function renderRow(client) {
+            return `<tr data-id="${escapeHtml(client.id)}">
+                <td><strong>${escapeHtml(client.name)}</strong></td>
+                <td>
+                    <div>📧 ${escapeHtml(client.email) || 'No email'}</div>
+                    <div class="client-contact">📱 ${escapeHtml(client.phone) || 'No phone'}</div>
+                </td>
+                <td style="color:var(--text-muted);font-size:0.85rem;">${escapeHtml(client.address) || '—'}</td>
+                <td><div class="row-actions">
+                    <button class="btn btn-primary btn-sm edit-btn" data-id="${escapeHtml(client.id)}">Edit</button>
+                    <button class="btn btn-secondary btn-sm use-btn" data-id="${escapeHtml(client.id)}">Use in Invoice</button>
+                    <button class="btn btn-danger btn-sm del-btn" data-id="${escapeHtml(client.id)}">🗑️</button>
+                </div></td>
+            </tr>`;
+        }
+
+        function render() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            filteredClients = allClients.filter(c => {
+                return !search ||
+                    (c.name && c.name.toLowerCase().includes(search)) ||
+                    (c.email && c.email.toLowerCase().includes(search)) ||
+                    (c.phone && c.phone.toLowerCase().includes(search));
+            });
+
+            const total = filteredClients.length;
+            const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const page = filteredClients.slice(start, start + PAGE_SIZE);
+
+            const tbody = document.getElementById('clientTableBody');
+            if (page.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <h3>No clients yet</h3>
+                    <p>Add your first client to get started.</p>
+                </td></tr>`;
+            } else {
+                tbody.innerHTML = page.map(renderRow).join('');
+            }
+
+            document.getElementById('pageStart').textContent = total > 0 ? start + 1 : 0;
+            document.getElementById('pageEnd').textContent = Math.min(start + PAGE_SIZE, total);
+            document.getElementById('pageTotal').textContent = total;
+            document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+
+            // History
+            document.getElementById('totalClients').textContent = allClients.length;
+            document.getElementById('withEmail').textContent = allClients.filter(c => c.email).length;
+            document.getElementById('withPhone').textContent = allClients.filter(c => c.phone).length;
+        }
+
+        function openModal(client) {
+            editingId = client ? client.id : null;
+            document.getElementById('modalTitle').textContent = client ? 'Edit Client' : 'Add Client';
+            document.getElementById('clientName').value = client ? client.name : '';
+            document.getElementById('clientEmail').value = client ? client.email : '';
+            document.getElementById('clientPhone').value = client ? client.phone : '';
+            document.getElementById('clientAddress').value = client ? client.address : '';
+            document.getElementById('clientModal').classList.add('open');
+            document.getElementById('clientName').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('clientModal').classList.remove('open');
+            editingId = null;
+        }
+
+        function saveClient() {
+            const name = document.getElementById('clientName').value.trim();
+            if (!name) return alert('Client name is required');
+            const data = {
+                id: editingId || Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+                name,
+                email: document.getElementById('clientEmail').value.trim(),
+                phone: document.getElementById('clientPhone').value.trim(),
+                address: document.getElementById('clientAddress').value.trim(),
+                createdAt: editingId ? allClients.find(c => c.id === editingId)?.createdAt : new Date().toISOString()
+            };
+
+            if (editingId) {
+                const idx = allClients.findIndex(c => c.id === editingId);
+                if (idx >= 0) allClients[idx] = { ...allClients[idx], ...data };
+            } else {
+                allClients.push(data);
+            }
+            saveClients(allClients);
+            closeModal();
+            render();
+        }
+
+        function deleteClient(id) {
+            if (!confirm('Delete this client?')) return;
+            allClients = allClients.filter(c => c.id !== id);
+            saveClients(allClients);
+            render();
+        }
+
+        function useClient(id) {
+            const client = allClients.find(c => c.id === id);
+            if (!client) return;
+            localStorage.setItem('editClient', JSON.stringify(client));
+            window.location.href = 'index.html';
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; render(); });
+        document.getElementById('prevPageBtn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; render(); } });
+        document.getElementById('nextPageBtn').addEventListener('click', () => { currentPage++; render(); });
+        document.getElementById('addClientBtn').addEventListener('click', () => openModal(null));
+        document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+        document.getElementById('modalSaveBtn').addEventListener('click', saveClient);
+        document.getElementById('clientModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+        document.getElementById('clientTableBody').addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            if (btn.classList.contains('edit-btn')) {
+                const client = allClients.find(c => c.id === id);
+                if (client) openModal(client);
+            } else if (btn.classList.contains('use-btn')) {
+                useClient(id);
+            } else if (btn.classList.contains('del-btn')) {
+                deleteClient(id);
+            }
+        });
+
+        // Mobile sidebar toggle
+        document.querySelector('.sidebar-toggle-btn')?.addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        // Escape key closes modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Init
+        allClients = getClients();
+        render();
+    })();
+    </script>
+</body>
+</html>

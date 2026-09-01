@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>GitHub OAuth</title></head>
+<body>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (code && window.opener) {
+    window.opener.postMessage({ type: 'github-oauth', code }, window.location.origin);
+  }
+  window.close();
+</script>
+</body>
+</html>

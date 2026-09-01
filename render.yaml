@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: invoice-generator
+    runtime: node
+    nodeVersion: 20
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node index.js
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: /data/invoices.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRO_MONTHLY_PRICE
+        sync: false
+      - key: STRIPE_PRO_ANNUAL_PRICE
+        sync: false
+      - key: STRIPE_BUSINESS_MONTHLY_PRICE
+        sync: false
+      - key: STRIPE_BUSINESS_ANNUAL_PRICE
+        sync: false
+      - key: GOOGLE_ADSENSE_CLIENT
+        sync: false
+      - key: GOOGLE_ADSENSE_SLOT
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: CRON_ENABLED
+        value: "true"
+
+  - type: static
+    name: invoice-generator-frontend
+    rootDir: .
+    staticPublishPath: public
+    buildCommand: mkdir -p public && cp index.html history.html clients.html pricing.html oauth-github-callback.html public/ && cp -r css js public/
+    routes:
+      - type: rewrite
+        source: /**
+        destination: /index.html

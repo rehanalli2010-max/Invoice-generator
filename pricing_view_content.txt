@@ -1,0 +1,176 @@
+
+                <div class="pricing-header">
+                    <h1>Pick the plan that<br>fits your next stage.</h1>
+                    <p>Start small, then unlock deeper analysis as your team and event volume grow.</p>
+                </div>
+
+                <div class="billing-toggle">
+                    <span id="monthlyLabel" class="active">Monthly<span class="line-right"></span><span class="line-bottom"></span></span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="billingToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span id="annualLabel">Annual</span>
+                    <span class="save-badge">Save up to 22%</span>
+                </div>
+
+                <div class="cards-container">
+                    <!-- FREE -->
+                    <div class="card" id="card-free">
+                        <div class="card-header-row">
+                            <h3>Free</h3>
+                        </div>
+                        <div class="price">$0 <span>/mo</span></div>
+                        <div class="annual-note">&nbsp;</div>
+                        <p class="desc">For individuals getting started with invoicing.</p>
+                        <ul class="features">
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span><strong>20 actions</strong> per day</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Core invoicing features</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>PDF export</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Client management</span>
+                            </li>
+                            <li class="disabled">
+                                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                <span>Website banner ads shown</span>
+                            </li>
+                            <li class="disabled">
+                                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                <span>Custom branding</span>
+                            </li>
+                            <li class="disabled">
+                                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                <span>Priority support</span>
+                            </li>
+                        </ul>
+                        <button class="btn-card secondary" id="btn-free" onclick="window.pricing && pricing.handleFree()">Get Started</button>
+                    </div>
+
+                    <!-- PRO -->
+                    <div class="card active-card" id="card-pro">
+                        <div class="line-right"></div>
+                        <div class="line-bottom"></div>
+                        <div class="card-header-row">
+                            <h3>Pro</h3>
+                            <span class="badge">RECOMMENDED</span>
+                        </div>
+                        <div class="price">$<span id="pro-price">9</span> <span>/mo</span></div>
+                        <div class="annual-note" id="pro-annual-note">&nbsp;</div>
+                        <p class="desc">For professionals who need more power and flexibility.</p>
+                        <ul class="features">
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span><strong>500 actions</strong> per day</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>All features included</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Clean PDF export (no ads)</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>All 5 premium templates</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Unlimited clients</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>No website ads</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Priority email support</span>
+                            </li>
+                        </ul>
+                        <div id="pro-auth-prompt" class="auth-prompt" style="display:none;">
+                            <p>Sign in to subscribe</p>
+                            <button class="btn-card primary" onclick="if (window.pageTransition) { window.pageTransition.navigate('index.html'); } else { window.location.href='index.html'; }">Sign In</button>
+                        </div>
+                        <div id="pro-actions">
+                            <button class="btn-card primary" id="btn-pro" onclick="window.pricing && pricing.handleSubscribe('pro')">Subscribe</button>
+                        </div>
+                    </div>
+
+                    <!-- BUSINESS -->
+                    <div class="card" id="card-business">
+                        <div class="card-header-row">
+                            <h3>Business</h3>
+                        </div>
+                        <div class="price">$<span id="biz-price">19</span> <span>/mo</span></div>
+                        <div class="annual-note" id="biz-annual-note">&nbsp;</div>
+                        <p class="desc">For teams and enterprises that need full control.</p>
+                        <ul class="features">
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span><strong>Unlimited</strong> actions</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>All features included</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Clean PDF export (no ads)</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>All 5 premium templates</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Unlimited clients</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>No website ads</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Custom branding</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Priority 24/7 support</span>
+                            </li>
+                        </ul>
+                        <div id="biz-auth-prompt" class="auth-prompt" style="display:none;">
+                            <p>Sign in to subscribe</p>
+                            <button class="btn-card primary" onclick="if (window.pageTransition) { window.pageTransition.navigate('index.html'); } else { window.location.href='index.html'; }">Sign In</button>
+                        </div>
+                        <div id="biz-actions">
+                            <button class="btn-card primary" id="btn-biz" onclick="window.pricing && pricing.handleSubscribe('business')">Subscribe</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Comparison -->
+                <div class="feature-comparison">
+                    <h2>Feature Comparison</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Free</th>
+                                <th>Pro</th>
+                                <th>Business</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Invoice Actions / Day</td><td>20</td><td>500</td><td>Unlimited</td></tr>
+                            <tr><td>Clients</td><td>Basic</td><td>Unlimited</td><td>Unlimited</td></tr>
+                            <tr><td>Export</td><td>PDF with Ads</td><td>Clean PDF</td><td>Clean PDF</td></tr>

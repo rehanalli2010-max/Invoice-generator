@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-inter: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Light Theme Colors (default) */
+  --color-bg-primary-light: #ffffff;     /* white */
+  --color-surface-light: #fafafa;        /* zinc-50 */
+  --color-accent-primary-light: #06b6d4; /* cyan-500 */
+  --color-accent-alert-light: #ef4444;   /* red-500 */
+  --color-accent-secondary-light: #22c55e; /* green-500 */
+
+  --color-text-main-light: #09090b;      /* zinc-950 */
+  --color-text-muted-light: #71717a;     /* zinc-500 */
+  --color-border-light: #e4e4e7;         /* zinc-200 */
+
+  /* Dark Theme Colors */
+  --color-bg-primary-dark: #0B0F19;      /* zinc-950 */
+  --color-surface-dark: #131926;         /* zinc-900 */
+  --color-accent-primary-dark: #06b6d4;  /* cyan-500 */
+  --color-accent-alert-dark: #ef4444;    /* red-500 */
+  --color-accent-secondary-dark: #22c55e; /* green-500 */
+
+  --color-text-main-dark: #ffffff;       /* zinc-50 */
+  --color-text-muted-dark: #94a3b8;      /* zinc-400 */
+  --color-border-dark: rgba(255, 255, 255, 0.08);          /* zinc-800 */
+}
+
+@layer base {
+  :root {
+    /* Light theme (default) */
+    --background: var(--color-bg-primary-light);
+    --foreground: var(--color-text-main-light);
+
+    --card: var(--color-surface-light);
+    --card-foreground: var(--color-text-main-light);
+
+    --popover: var(--color-surface-light);
+    --popover-foreground: var(--color-text-main-light);
+
+    --primary: var(--color-accent-primary-light);
+    --primary-foreground: var(--color-bg-primary-light);
+
+    --secondary: var(--color-border-light);
+    --secondary-foreground: var(--color-text-main-light);
+
+    --muted: var(--color-border-light);
+    --muted-foreground: var(--color-text-muted-light);
+
+    --accent: var(--color-accent-primary-light);
+    --accent-foreground: var(--color-bg-primary-light);
+
+    --destructive: var(--color-accent-alert-light);
+    --destructive-foreground: var(--color-bg-primary-light);
+
+    --border: var(--color-border-light);
+    --input: var(--color-border-light);
+    --ring: var(--color-accent-primary-light);
+
+    --primary-rgb: 6, 182, 212;
+
+    --radius: 1rem;
+
+    --font-sans: var(--font-inter);
+    --font-mono: var(--font-mono);
+  }
+
+  .dark {
+    --background: var(--color-bg-primary-dark);
+    --foreground: var(--color-text-main-dark);
+
+    --card: var(--color-surface-dark);
+    --card-foreground: var(--color-text-main-dark);
+
+    --popover: var(--color-surface-dark);
+    --popover-foreground: var(--color-text-main-dark);
+
+    --primary: var(--color-accent-primary-dark);
+    --primary-foreground: var(--color-bg-primary-dark);
+
+    --secondary: var(--color-border-dark);
+    --secondary-foreground: var(--color-text-main-dark);
+
+    --muted: var(--color-border-dark);
+    --muted-foreground: var(--color-text-muted-dark);
+
+    --accent: var(--color-accent-primary-dark);
+    --accent-foreground: var(--color-bg-primary-dark);
+
+    --destructive: var(--color-accent-alert-dark);
+    --destructive-foreground: var(--color-text-main-dark);
+
+    --border: var(--color-border-dark);
+    --input: var(--color-border-dark);
+    --ring: var(--color-accent-primary-dark);
+
+    --primary-rgb: 6, 182, 212;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Typography Component Stylings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-inter);
+    font-weight: 600;
+  }
+
+  .kpi-value {
+    font-family: var(--font-mono);
+    font-weight: 700;
+  }
+}
+
+@layer components {
+  /* Component Stylings */
+  .wv-card {
+    background-color: var(--card);
+    border-radius: var(--radius);
+    padding: 32px;
+    border: 1px solid var(--border);
+  }
+
+  .wv-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .wv-table-row {
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s;
+  }
+
+  .wv-table-row:hover {
+    background-color: var(--muted);
+  }
+
+  .wv-alert {
+    background-color: #fef2f2; /* red-50 for light mode */
+    border-left: 4px solid var(--destructive);
+    color: var(--destructive);
+    padding: 1rem;
+    border-radius: 4px;
+  }
+
+  .dark .wv-alert {
+    background-color: #3f1515;
+  }
+}

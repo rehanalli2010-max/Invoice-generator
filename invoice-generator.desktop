@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Invoice Generator
+Comment=Start Invoice Generator Dev Server
+Exec=/mnt/d/CODE/Invoice\ generator/start-dev.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+StartupNotify=true
+Terminal=false

@@ -1,0 +1,15 @@
+--- css/style.css
++++ css/style.css
+@@ -1609,8 +1609,10 @@
+ .file-upload-text {
+     font-size: 0.9375rem;
+     font-weight: 600;
+     color: var(--text-main);
++    white-space: nowrap;
+ }
+ .file-upload-hint {
+     font-size: 0.8rem;
+     color: var(--text-light);
+     margin-left: auto;
++    white-space: nowrap;
+ }

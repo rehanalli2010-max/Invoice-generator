@@ -1,0 +1,5 @@
+
+.sidebar {
+    transition: transform 0s !important;
+}
+

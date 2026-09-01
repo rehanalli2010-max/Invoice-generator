@@ -1,0 +1,33 @@
+model_list:
+  - model_name: moonshotai/kimi-k3
+    litellm_params:
+      model: nvidia_nim/moonshotai/kimi-k3
+      api_key: "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"
+      rpm: 40
+
+  - model_name: moonshotai/kimi-k3
+    litellm_params:
+      model: nvidia_nim/moonshotai/kimi-k3
+      api_key: "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"
+      rpm: 40
+
+  - model_name: moonshotai/kimi-k3
+    litellm_params:
+      model: nvidia_nim/moonshotai/kimi-k3
+      api_key: "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"
+      rpm: 40
+
+  - model_name: moonshotai/kimi-k3
+    litellm_params:
+      model: nvidia_nim/moonshotai/kimi-k3
+      api_key: "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"
+      rpm: 40
+
+  - model_name: moonshotai/kimi-k3
+    litellm_params:
+      model: nvidia_nim/moonshotai/kimi-k3
+      api_key: "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"
+      rpm: 40
+
+router_settings:
+  routing_strategy: "simple-shuffle"

@@ -1,0 +1,14 @@
+--- test_server/css/style.css
++++ test_server/css/style.css
+@@ -1606,10 +1606,12 @@
+     font-size: 0.9375rem;
+     font-weight: 600;
+     color: var(--text-main);
++    white-space: nowrap;
+ }
+ .file-upload-hint {
+     font-size: 0.8rem;
+     color: var(--text-light);
+     margin-left: auto;
++    white-space: nowrap;
+ }

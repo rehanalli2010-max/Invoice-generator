@@ -1,0 +1,139 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  // When running locally in new_backend it uses a local database for now,
+  // but it can be configured to point to the main sqlite file via .env later
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  passwordHash          String    @map("password_hash")
+  tier                  String    @default("free")
+  stripeCustomerId      String?   @map("stripe_customer_id")
+  stripeSubscriptionId  String?   @map("stripe_subscription_id")
+  dailyActionCount      Int       @default(0) @map("daily_action_count")
+  dailyActionDate       String?   @map("daily_action_date")
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  // Added newly mapped custom properties from old db.js
+  invPrefix             String?   @default("INV-") @map("inv_prefix")
+  invStartNumber        Int?      @default(1) @map("inv_start_number")
+  invFormat             String?   @default("PREFIX-XXXX") @map("inv_format")
+  timezone              String?   @default("UTC")
+  tokenVersion          Int?      @default(0) @map("token_version")
+
+  // Relations
+  invoices              Invoice[]
+  clients               Client[]
+  emailConfigs          EmailConfig[]
+  statusHistories       StatusHistory[]
+  passwordResetTokens   PasswordResetToken[]
+
+  @@map("users")
+}
+
+model Invoice {
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
+  data                  String
+  status                String?   @default("draft")
+  customFields          String?   @default("[]") @map("custom_fields")
+  paidAt                DateTime? @map("paid_at")
+  dueAt                 DateTime? @map("due_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user                  User            @relation(fields: [userId], references: [id])
+  statusHistory         StatusHistory[]
+
+  @@index([userId])
+  @@map("invoices")
+}
+
+model Client {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("clients")
+}
+
+model EmailConfig {
+  id                    String   @id @default(uuid())
+  userId                String   @map("user_id")
+  host                  String
+  port                  Int      @default(587)
+  secure                Int      @default(0) // Using Int since sqlite maps booleans to 0/1
+  user                  String
+  pass                  String
+  fromName              String?  @map("from_name")
+  fromEmail             String?  @map("from_email")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  // Newly mapped properties
+  emailSubjectTemplate  String?  @default("{{documentType}} #{{invoiceNumber}} from {{companyName}}") @map("email_subject_template")
+  emailAccentColor      String?  @default("#5e6ad2") @map("email_accent_color")
+  emailShowLogo         Int?     @default(1) @map("email_show_logo")
+  emailBodyBg           String?  @default("#ffffff") @map("email_body_bg")
+
+  // Relations
+  userModel             User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("email_configs")
+}
+
+model StatusHistory {
+  id          String   @id @default(uuid())
+  invoiceId   String   @map("invoice_id")
+  fromStatus  String?  @map("from_status")
+  toStatus    String?  @map("to_status")
+  changedBy   String   @map("changed_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [changedBy], references: [id])
+
+  @@index([invoiceId])
+  @@index([changedBy])
+  @@map("status_history")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  used      Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("password_reset_tokens")
+}
+
+model OauthState {
+  state     String   @id
+  expiresAt Int      @map("expires_at")
+  
+  @@map("oauth_states")
+}

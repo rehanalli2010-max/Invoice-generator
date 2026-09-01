@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  },
+  "dependencies": {
+    "zxcvbn": "^4.4.2"
+  }
+}

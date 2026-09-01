@@ -1,0 +1,36 @@
+--- css/style.css
++++ css/style.css
+@@ -4336,8 +4336,13 @@
+ 
+ 
+-
+-.page-section { display: none; opacity: 0; transition: opacity 0.25s ease-in-out; }
+-.page-section.active { display: block; opacity: 1; }
+-
+-.page-section { display: none; opacity: 0; transition: opacity 0.2s ease-in-out; }
+-.page-section.active { display: block; opacity: 1; }
++/* Use this to make sure only one page is visible at a time */
++.page-section {
++    display: none;
++}
++
++/* Only the selected page is visible */
++.page-section.active {
++    display: block;
++}
++
++/* Sidebar active state */
++.sidebar-link {
++    display: flex;
++    align-items: center;
++    gap: 12px;
++    text-decoration: none;
++    cursor: pointer;
++}
++
++/* No animation or transition */
++.sidebar-link,
++.page-section {
++    transition: none !important;
++    animation: none !important;
++}

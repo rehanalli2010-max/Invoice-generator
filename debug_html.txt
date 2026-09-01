@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<script>
+window.addEventListener('error', function(e) {
+    console.error('GLOBAL ERROR:', e.message, e.filename, e.lineno);
+    alert('JS Error: ' + e.message);
+});
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator</title>
+    <meta name="description" content="Create professional invoices effortlessly with Invoice Generator. Free, fast, and customizable.">
+    <link rel="stylesheet" href="css/style.css?v=1786310000000">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        (function(){ var m=localStorage.getItem('theme-mode'); if(m) document.documentElement.setAttribute('data-theme',m); })();
+    </script>
+</head>
+<body>
+    <noscript><div style="padding:2rem;text-align:center;background:#fee2e2;color:#dc2626;">JavaScript is required to use this application. Please enable JavaScript in your browser.</div></noscript>
+    <a href="#mainContent" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:99999;padding:0.75rem 1.5rem;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;border-radius:var(--radius-sm);">Skip to main content</a>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 style="cursor: pointer;" onclick="window.location.href='index.html';" title="Go to Home">Invoice Generator</h2>
+                <button class="btn btn-icon sidebar-close-btn" onclick="window.app && window.app.toggleSidebar && window.app.toggleSidebar()">×</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="sidebar-link" id="navHome" data-page="home">
+                    <span class="sidebar-icon" aria-hidden="true">📊</span>
+                    <span>Home</span>
+                </a>
+                <a href="#" onclick="window.app && window.app.handleNewInvoice && window.app.handleNewInvoice(); return false;" id="navInvoice" class="sidebar-link" data-page="new-invoice">
+                    <span class="sidebar-icon" aria-hidden="true">📝</span>
+                    <span data-i18n="nav.newInvoice">New Invoice</span>
+                </a>
+                <a href="#" class="sidebar-link" onclick="window.app && window.app.showInvoiceHistory && window.app.showInvoiceHistory(); return false;" id="navHistory" data-page="history">
+                    <span class="sidebar-icon" aria-hidden="true">📋</span>
+                    <span data-i18n="nav.history">History</span>
+                </a>
+                <a href="#" class="sidebar-link" onclick="window.app && window.app.showClientManager && window.app.showClientManager(); return false;" id="navClients" data-page="clients">
+                    <span class="sidebar-icon" aria-hidden="true">👥</span>
+                    <span data-i18n="nav.clients">Clients</span>
+                </a>
+                <a href="templates.html" class="sidebar-link" id="navTemplates" data-page="templates">
+                    <span class="sidebar-icon" aria-hidden="true">🏢</span>
+                    <span data-i18n="nav.templates">Templates</span>
+                </a>
+                <a href="pricing.html" class="sidebar-link" id="navPricing" data-page="pricing">
+                    <span class="sidebar-icon" aria-hidden="true">💎</span>
+                    <span>Pricing</span>
+                </a>
+                <div class="sidebar-divider"></div>
+                <div id="sidebarAuthSection">
+                    <button class="btn btn-primary sidebar-btn" onclick="alert('Authentication disabled. Using offline mode.')" data-i18n="nav.signIn">Sign In</button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="dashboard-content">
+            <!-- Header -->
+            <header class="header bg-transparent border-none">
+                <div class="header-content">
+                    <div class="logo-section">
+                        <button class="btn btn-icon sidebar-toggle-btn" id="sidebarToggleBtn" onclick="window.app && window.app.toggleSidebar && window.app.toggleSidebar()" title="Menu">☰</button>
+                        <div class="logo-text">
+                            <h1 id="headerTitle" class="brand-title">Invoice Generator</h1>
+                            <p id="headerSubtitle">Professional invoice creation made easy</p>
+                        </div>
+                    </div>
+                    <div class="header-actions" id="headerActions">
+                        <button class="btn btn-icon theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+                            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"/>
+                                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                            </svg>
+                            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                            </svg>
+                        </button>
+                        <div class="locale-switcher-wrapper" id="localeSwitcher"></div>
+                        <button class="btn btn-icon" onclick="window.app && window.app.showSettingsModal && window.app.showSettingsModal()" title="Settings">⚙️</button>
+                        <div id="userSection" style="display:none;">
+                            <span class="user-badge" id="userBadge">
+                                <span class="tier-badge" id="tierBadge">FREE</span>
+                                <span class="user-email" id="userEmail"></span>
+                                <span class="action-count" id="actionCount"></span>
+                            </span>
+                            <button class="btn btn-secondary btn-sm" onclick="window.app && window.app.logout && window.app.logout()" data-i18n="nav.signOut">Sign Out</button>
+                        </div>
+                        <div id="authSection" class="header-auth-only">
+                            <button class="btn btn-primary" id="authBtn" onclick="alert('Authentication disabled. Using offline mode.')" data-i18n="nav.signIn">Sign In</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+        <!-- Header Banner Ad (free tier) -->
+        <div class="ad-slot ad-banner" id="adHeader" aria-label="Advertisement">
+            <div class="ad-label">Advertisement</div>
+            <!-- Google AdSense: Header Banner 728x90 or responsive -->
+            <!-- <ins class="adsbygoogle" data-ad-client="ca-pub-XXXX" data-ad-slot="XXXX" data-ad-format="horizontal" data-full-width-responsive="true"></ins> -->
+            <div class="ad-placeholder">Ad Space — Header Banner (728x90)</div>
+        </div>
+
+        <!-- Migration Prompt Banner -->
+        <div id="migrationBanner" class="migration-banner" style="display:none;">
+            <div class="migration-content">
+                <span class="migration-icon">&#9733;</span>
+                <div class="migration-text">
+                    <strong>Create an account</strong> to save invoices across devices and keep them safe.
+                </div>
+                <div class="migration-actions">
+                    <button class="btn btn-primary btn-sm" onclick="alert('Authentication disabled. Using offline mode.')">Sign Up Free</button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.app && window.app.dismissMigration && window.app.dismissMigration()">Dismiss</button>
+                </div>
+            </div>
+        </div>
+
+        <main class="main-content" id="mainContent">
+            <section id="new-invoice" class="page-section">
+                    <div class="content-wrapper">
+                <!-- Form Section -->
+                <section class="form-section">
+                    <div class="form-container">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h2 style="margin: 0;" data-i18n="invoiceForm.createInvoice">Create Invoice</h2>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="window.app && window.app.highlightNecessaryFields && window.app.highlightNecessaryFields()" title="Highlight necessary information">⭐ <span data-i18n="invoiceForm.required">Required</span></button>
+                                <button class="btn btn-success btn-sm" onclick="window.app && window.app.showDashboardView && window.app.showDashboardView()" data-i18n="dashboard.viewReport">View Full Report &rarr;</button>
+                            </div>
+                        </div>
+
+                        <!-- Company Info -->
+                        <div class="form-group-section">
+                            <h3 data-i18n="invoiceForm.companyInfo">🏢 Company Information</h3>
+                            <div class="template-controls" style="margin-bottom: 20px;">
+                                <label for="companyTemplateSelect">Company Profile:</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                  <div class="custom-select" data-select="companyTemplateSelect" style="flex: 1;">
+                                      <select id="companyTemplateSelect" onchange="window.app && window.app.loadCompanyTemplate && window.app.loadCompanyTemplate()">
+                                         <option value="">-- Manual Entry --</option>
+                                      </select>
+                                      <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="companyTemplateOptions">
+                                          <span class="custom-select-value">-- Manual Entry --</span>
+                                          <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                      </div>
+                                      <ul id="companyTemplateOptions" class="custom-select-options" role="listbox"></ul>
+                                  </div>
+                                  <button type="button" id="btnSaveCompanyTemplate" class="btn btn-secondary" onclick="window.location.href='templates.html'" style="text-decoration: none; display: flex; align-items: center; justify-content: center; height: 100%; white-space: nowrap;">Manage Templates</button>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="companyName" data-i18n="invoiceForm.companyName">Company Name</label>
+                                    <input type="text" id="companyName" placeholder="Your Company Name" value="My Company">
+                                </div>
+                                <div class="form-group">
+                                    <label for="companyEmail" data-i18n="invoiceForm.companyEmail">Company Email</label>
+                                    <input type="email" id="companyEmail" placeholder="company@example.com" value="company@example.com">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="companyPhone" data-i18n="invoiceForm.companyPhone">Company Phone</label>
+                                    <input type="tel" id="companyPhone" placeholder="+1 (555) 000-0000" value="+1 (555) 000-0000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="companyAddress" data-i18n="invoiceForm.companyAddress">Company Address</label>
+                                    <input type="text" id="companyAddress" placeholder="123 Main St, City, State" value="123 Main St, New York, NY">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label id="companyLogoLabel" for="companyLogo" data-i18n="invoiceForm.companyLogo">Company Logo (Upload Image)</label>
+                                    <div class="file-upload">
+                                        <input type="file" id="companyLogo" accept="image/*" onchange="window.app && window.app.handleLogoUpload(event)" aria-label="Company Logo upload">
+                                        <button type="button" class="file-upload-label" onclick="document.getElementById('companyLogo').click()">
+                                            <span class="file-upload-icon" aria-hidden="true">📤</span>
+                                            <span class="file-upload-text">Choose File</span>
+                                            <span class="file-upload-hint">PNG, JPG up to 2MB</span>
+                                        </button>
+                                    </div>
+                                    <input type="hidden" id="companyLogoBase64">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label data-i18n="invoiceForm.invoiceTheme">Invoice Theme</label>
+                                    <!-- Hidden select keeps JS working (value synced by theme picker buttons) -->
+                                    <select id="themeSelect" style="display:none;" aria-hidden="true">
+                                        <option value="default">Minimalist (Default)</option>
+                                        <option value="theme-slate">Slate Professional</option>
+                                        <option value="theme-emerald">Emerald Trust</option>
+                                        <option value="theme-navy">Classic Navy</option>
+                                        <option value="theme-cyberpunk">Cyberpunk Dark</option>
+                                    </select>
+                                    <div class="theme-picker">
+                                        <button type="button" class="theme-swatch active" data-theme="default" aria-label="Minimalist theme" onclick="window.app && window.app.selectThemeSwatch && window.app.selectThemeSwatch(this)">
+                                            <span class="swatch-colors">
+                                                <span style="background:#121212"></span>
+                                                <span style="background:#5e6ad2"></span>
+                                                <span style="background:#f4f4f5"></span>
+                                            </span>
+                                            <span class="swatch-label">Minimalist</span>
+                                        </button>
+                                        <button type="button" class="theme-swatch" data-theme="theme-slate" aria-label="Slate theme" onclick="window.app && window.app.selectThemeSwatch && window.app.selectThemeSwatch(this)">
+                                            <span class="swatch-colors">
+                                                <span style="background:#334155"></span>
+                                                <span style="background:#475569"></span>
+                                                <span style="background:#f1f5f9"></span>
+                                            </span>
+                                            <span class="swatch-label">Slate</span>
+                                        </button>
+                                        <button type="button" class="theme-swatch" data-theme="theme-emerald" aria-label="Emerald theme" onclick="window.app && window.app.selectThemeSwatch && window.app.selectThemeSwatch(this)">
+                                            <span class="swatch-colors">
+                                                <span style="background:#065f46"></span>
+                                                <span style="background:#059669"></span>
+                                                <span style="background:#d1fae5"></span>
+                                            </span>
+                                            <span class="swatch-label">Emerald</span>
+                                        </button>
+                                        <button type="button" class="theme-swatch" data-theme="theme-navy" aria-label="Navy theme" onclick="window.app && window.app.selectThemeSwatch && window.app.selectThemeSwatch(this)">
+                                            <span class="swatch-colors">
+                                                <span style="background:#1e3a8a"></span>
+                                                <span style="background:#3b82f6"></span>
+                                                <span style="background:#dbeafe"></span>
+                                            </span>
+                                            <span class="swatch-label">Navy</span>
+                                        </button>
+                                        <button type="button" class="theme-swatch" data-theme="theme-cyberpunk" aria-label="Cyberpunk theme" onclick="window.app && window.app.selectThemeSwatch && window.app.selectThemeSwatch(this)">
+                                            <span class="swatch-colors">
+                                                <span style="background:#d946ef"></span>
+                                                <span style="background:#8b5cf6"></span>
+                                                <span style="background:#0f172a"></span>
+                                            </span>
+                                            <span class="swatch-label">Cyberpunk</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Client Info -->
+                        <div class="form-group-section">
+                            <h3 data-i18n="invoiceForm.clientInfo">👤 Client Information</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="clientName" data-i18n="invoiceForm.clientName">Client Name *</label>
+                                    <input type="text" id="clientName" placeholder="Client Name" required aria-describedby="clientNameError">
+                                    <span id="clientNameError" class="form-error" aria-live="polite">This field is required</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="clientEmail" data-i18n="invoiceForm.clientEmail">Client Email</label>
+                                    <input type="email" id="clientEmail" placeholder="client@example.com">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="clientPhone" data-i18n="invoiceForm.clientPhone">Client Phone</label>
+                                    <input type="tel" id="clientPhone" placeholder="+1 (555) 000-0000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="clientAddress" data-i18n="invoiceForm.clientAddress">Client Address</label>
+                                    <input type="text" id="clientAddress" placeholder="123 Client St, City, State">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label for="savedClients" data-i18n="invoiceForm.savedClients">Saved Clients</label>
+                                    <div class="custom-select" data-select="savedClients">
+                                        <select id="savedClients" onchange="window.app && window.app.loadClient()">
+                                            <option value="">-- Select a saved client --</option>
+                                        </select>
+                                        <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="savedClientsOptions">
+                                            <span class="custom-select-value">-- Select a saved client --</span>
+                                            <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <ul id="savedClientsOptions" class="custom-select-options" role="listbox"></ul>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                                        <button type="button" class="btn btn-secondary" onclick="window.app && window.app.saveClient && window.app.saveClient()" style="white-space: nowrap;" data-i18n="invoiceForm.saveClient">💾 Save Client</button>
+                                        <button type="button" class="btn btn-secondary" onclick="window.app && window.app.showClientManager && window.app.showClientManager()" style="white-space: nowrap;" data-i18n="invoiceForm.manageClients">📋 Manage Clients</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invoice Details -->
+                        <div class="form-group-section">
+                            <h3 data-i18n="invoiceForm.documentDetails">📄 Document Details</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="documentType" data-i18n="invoiceForm.documentType">Document Type</label>
+                                    <div class="custom-select" data-select="documentType">
+                                        <select id="documentType" onchange="window.app && (window.app.updateInvoiceFromForm(), window.app.updatePreview())">
+                                            <option value="Invoice">Invoice</option>
+                                            <option value="Estimate">Estimate</option>
+                                            <option value="Quote">Quote</option>
+                                            <option value="Receipt">Receipt</option>
+                                        </select>
+                                        <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="documentTypeOptions">
+                                            <span class="custom-select-value">Invoice</span>
+                                            <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <ul id="documentTypeOptions" class="custom-select-options" role="listbox"></ul>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="invoiceNumber" data-i18n="invoiceForm.number">Number *</label>
+                                    <input type="text" id="invoiceNumber" placeholder="INV-001" required aria-describedby="invoiceNumberError">
+                                    <span id="invoiceNumberError" class="form-error" aria-live="polite">This field is required</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="invoiceDate" data-i18n="invoiceForm.date">Date *</label>
+                                    <input type="text" id="invoiceDate" class="flatpickr-date" placeholder="Select date" onchange="window.app && window.app.updateRecurringPreview && window.app.updateRecurringPreview()" required aria-describedby="invoiceDateError">
+                                    <span id="invoiceDateError" class="form-error" aria-live="polite">This field is required</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="dueDate" data-i18n="invoiceForm.dueDate">Due Date *</label>
+                                    <input type="text" id="dueDate" class="flatpickr-date" placeholder="Select due date" required aria-describedby="dueDateError">
+                                    <span id="dueDateError" class="form-error" aria-live="polite">This field is required</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="currency" data-i18n="invoiceForm.currency">Currency</label>
+                                    <div class="custom-select" data-select="currency">
+                                        <select id="currency">
+                                            <option value="USD">USD ($)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                            <option value="CAD">CAD (C$)</option>
+                                            <option value="AUD">AUD (A$)</option>
+                                            <option value="INR">INR (₹)</option>
+                                            <option value="JPY">JPY (¥)</option>
+                                        </select>
+                                        <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="currencyOptions">
+                                            <span class="custom-select-value">USD ($)</span>
+                                            <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <ul id="currencyOptions" class="custom-select-options" role="listbox"></ul>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="paymentTerms" data-i18n="invoiceForm.paymentTerms">Payment Terms</label>
+                                    <div class="custom-select" data-select="paymentTerms">
+                                        <select id="paymentTerms">
+                                            <option value="Net 30">Net 30</option>
+                                            <option value="Net 15">Net 15</option>
+                                            <option value="Net 7">Net 7</option>
+                                            <option value="Due on Receipt">Due on Receipt</option>
+                                            <option value="Net 60">Net 60</option>
+                                        </select>
+                                        <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="paymentTermsOptions">
+                                            <span class="custom-select-value">Net 30</span>
+                                            <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <ul id="paymentTermsOptions" class="custom-select-options" role="listbox"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="grid-column: 1 / -1; position: relative;" id="paymentLinkWrapper">
+                                    <label for="paymentLink" data-i18n="invoiceForm.paymentLink">Payment Collection Link</label>
+                                    <div class="input-with-icon">
+                                        <input type="url" id="paymentLink" placeholder="e.g. https://paypal.me/yourusername or Stripe links">
+                                        <span class="premium-lock" style="display: none; position: absolute; right: 10px; top: 12px; cursor: pointer;" title="Premium Feature">🔒 </span>
+                                    </div>
+                                    <div id="paymentLinkLockOverlay" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 5; border-radius: var(--radius-md); background: rgba(255,255,255,0.4); cursor: pointer;" onclick="if(window.pricing && window.pricing.handleSubscribe) window.pricing.handleSubscribe('startup')"></div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="recurringType" data-i18n="invoiceForm.recurring">Recurring</label>
+                                    <div class="custom-select" data-select="recurringType">
+                                        <select id="recurringType" onchange="window.app && window.app.updateInvoiceFromForm()">
+                                            <option value="none">One-time</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                            <option value="quarterly">Quarterly</option>
+                                        </select>
+                                        <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="recurringTypeOptions">
+                                            <span class="custom-select-value">One-time</span>
+                                            <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <ul id="recurringTypeOptions" class="custom-select-options" role="listbox"></ul>
+                                    </div>
+                                    <p id="recurringPreview" class="recurring-preview" style="display:none;" aria-live="polite"></p>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label for="notes" data-i18n="invoiceForm.notes">Notes/Payment Information</label>
+                                    <textarea id="notes" placeholder="Additional notes or payment instructions" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Items Section -->
+                        <div class="form-group-section">
+                            <h3 data-i18n="invoiceForm.lineItems">📋 Line Items</h3>
+                            <div class="items-list" id="itemsTableBody">
+                                <!-- Items will be added here -->
+                            </div>
+                            <div style="margin-top: 1rem; margin-bottom: 2rem;">
+                                <button type="button" class="btn btn-primary" onclick="window.app && window.app.addItem && window.app.addItem()" data-i18n="invoiceForm.addItem">+ Add Item</button>
+                            </div>
+                            <div class="form-row" style="margin-top: 0.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                                <div class="form-group" style="flex:1;">
+                                    <label for="savedProducts" data-i18n="products.savedItems">Saved Items</label>
+                                    <div class="custom-select" data-select="savedProducts">
+                                        <select id="savedProducts" onchange="window.app && window.app.addProductFromSaved && window.app.addProductFromSaved(this.value); this.value=''">
+                                            <option value="">{{t('products.select')}}</option>
+                                        </select>
+                                        <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="savedProductsOptions">
+                                            <span class="custom-select-value" data-i18n="products.select">Select saved item…</span>
+                                            <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <ul id="savedProductsOptions" class="custom-select-options" role="listbox"></ul>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="flex:0 0 auto; display:flex; align-items:flex-end; gap:0.5rem;">
+                                    <button class="btn btn-secondary" onclick="window.app && window.app.showProductCatalog && window.app.showProductCatalog()" data-i18n="products.manage" style="white-space:nowrap;">Manage Items</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tax & Discount -->
+                        <div class="form-group-section">
+                            <h3 data-i18n="invoiceForm.taxDiscount">Tax & Discount</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="taxType" data-i18n="invoiceForm.taxType">Tax Type</label>
+                                    <div class="custom-select" data-select="taxType">
+                                        <select id="taxType">
+                                            <option value="none">None</option>
+                                            <option value="percentage">Percentage (%)</option>
+                                            <option value="fixed">Fixed Amount</option>
+                                        </select>
+                                        <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="taxTypeOptions">
+                                            <span class="custom-select-value">None</span>
+                                            <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <ul id="taxTypeOptions" class="custom-select-options" role="listbox"></ul>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="taxRate" data-i18n="invoiceForm.taxRate">Tax Rate/Amount</label>
+                                    <input type="number" id="taxRate" placeholder="0" step="0.01" value="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="discountType" data-i18n="invoiceForm.discountType">Discount Type</label>
+                                    <div class="custom-select" data-select="discountType">
+                                        <select id="discountType">
+                                            <option value="none">None</option>
+                                            <option value="percentage">Percentage (%)</option>
+                                            <option value="fixed">Fixed Amount</option>
+                                        </select>
+                                        <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="discountTypeOptions">
+                                            <span class="custom-select-value">None</span>
+                                            <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <ul id="discountTypeOptions" class="custom-select-options" role="listbox"></ul>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="discountValue" data-i18n="invoiceForm.discountValue">Discount Value</label>
+                                    <input type="number" id="discountValue" placeholder="0" step="0.01" value="0">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="lateFeeType">Late Fee Type</label>
+                                    <div class="custom-select" data-select="lateFeeType">
+                                        <select id="lateFeeType">
+                                            <option value="none">None</option>
+                                            <option value="percentage">Percentage (%)</option>
+                                            <option value="fixed">Fixed Amount</option>
+                                        </select>
+                                        <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="lateFeeTypeOptions">
+                                            <span class="custom-select-value">None</span>
+                                            <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <ul id="lateFeeTypeOptions" class="custom-select-options" role="listbox"></ul>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lateFeeValue">Late Fee Value</label>
+                                    <input type="number" id="lateFeeValue" placeholder="0" step="0.01" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Signature Pad -->
+                        <div class="form-group-section">
+                            <h3 data-i18n="invoiceForm.signature">Authorize Signature</h3>
+                            <div class="form-row">
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label for="signatureCanvas" data-i18n="invoiceForm.signHere">Sign below (Using mouse or finger)</label>
+                                    <div class="signature-container" style="border: 2px dashed var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); padding: 0.5rem; text-align: center; position: relative; height: 180px; width: 100%;">
+                                        <canvas id="signatureCanvas" role="img" aria-label="Signature drawing area. No signature drawn." style="width: 100%; height: 100%; touch-action: none; cursor: crosshair;"></canvas>
+                                        <div id="signatureStatus" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="window.app && window.app.clearSignature && window.app.clearSignature()" style="position: absolute; bottom: 10px; right: 10px; padding: 0.25rem 0.75rem; font-size: 0.8rem; background: var(--bg-card);" data-i18n="invoiceForm.clearSignature">Clear Signature</button>
+                                    </div>
+                                    <input type="hidden" id="signatureBase64">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="form-actions">
+                            <button class="btn btn-primary btn-large" onclick="window.app && window.app.saveDraft && window.app.saveDraft()" data-i18n="invoiceForm.saveDraft">💾 Save Draft</button>
+                            <button class="btn btn-warning btn-large" onclick="window.app && window.app.saveInvoice && window.app.saveInvoice('pending', event)">⏳ Pending</button>
+                            <button class="btn btn-success btn-large" onclick="window.app && window.app.saveInvoice && window.app.saveInvoice('completed', event)">✅ Done</button>
+                            <button class="btn btn-success btn-large" onclick="window.app && window.app.printInvoice && window.app.printInvoice()" data-i18n="invoiceForm.print">🖨️ Print</button>
+                            <button class="btn btn-primary btn-large" onclick="window.app && window.app.downloadImage && window.app.downloadImage()" data-i18n="invoiceForm.downloadImage">Download Image</button>
+                            <button class="btn btn-danger btn-large" onclick="window.app && window.app.resetForm && window.app.resetForm()" data-i18n="invoiceForm.reset">🔄 Reset</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Preview Section -->
+                <section class="prepage-section">
+                    <div class="preview-container" id="invoicePreview">
+                        <!-- Invoice preview will be rendered here -->
+                    </div>
+
+                    <!-- Sidebar Ad (free tier) -->
+                    <!-- <div class="ad-slot ad-sidebar" id="adSidebar" aria-label="Advertisement">
+                        <div class="ad-label">Advertisement</div>
+                        <div class="ad-placeholder">Ad Space — Sidebar (300x250)</div>
+                    </div> -->
+                </section>
+                </div>
+            </section><!-- end new-invoice -->
+                <!-- Dashboard View -->
+                <section id="home" class="page-section active">
+                    <div class="dashboard-header-banner">
+                        <div class="banner-content">
+                            <h2 data-i18n="dashboard.greeting">Overview</h2>
+                            <p data-i18n="dashboard.subtitle">Stay updated with your store's performance today. Get a quick snapshot of key statistics.</p>
+                            <div class="flex-wrap">
+                                <button class="btn btn-success" onclick="window.app && window.app.showDashboardView && window.app.showDashboardView()" data-i18n="dashboard.viewReport">View Full Report &rarr;</button>
+                            </div>
+                        </div>
+                        <div class="banner-image">
+                            <div style="font-size: 4rem;">📈</div>
+                        </div>
+                    </div>
+
+                    <div class="dash-stats-row">
+                        <div class="dash-card stat-card">
+                            <div class="flex-between">
+                                <h3 data-i18n="dashboard.totalRevenue">Total Revenue</h3>
+                            </div>
+                            <div class="stat-main">
+                                <h2 class="dash-value" id="dashTotalRevenue">$0</h2>
+                            </div>
+                        </div>
+                        <div class="dash-card stat-card">
+                            <div class="flex-between">
+                                <h3 data-i18n="dashboard.totalInvoices">Total Invoices</h3>
+                            </div>
+                            <div class="stat-main">
+                                <h2 class="dash-value" id="dashTotalInvoices">0</h2>
+                            </div>
+                        </div>
+                        <div class="dash-card stat-card">
+                            <div class="flex-between">
+                                <h3 data-i18n="dashboard.averageInvoice">Average Invoice</h3>
+                            </div>
+                            <div class="stat-main">
+                                <h2 class="dash-value" id="dashAverageInvoice">$0</h2>
+                            </div>
+                        </div>
+                        <div class="dash-card stat-card">
+                            <div class="flex-between">
+                                <h3 data-i18n="dashboard.pendingInvoices">Pending</h3>
+                            </div>
+                            <div class="stat-main">
+                                <h2 class="dash-value" id="dashPendingCount">0</h2>
+                            </div>
+                        </div>
+                        <div class="dash-card stat-card">
+                            <div class="flex-between">
+                                <h3 data-i18n="dashboard.overdueInvoices">Overdue</h3>
+                            </div>
+                            <div class="stat-main">
+                                <h2 class="dash-value" id="dashOverdueCount">0</h2>
+                            </div>
+                        </div>
+                        <div class="dash-card stat-card">
+                            <div class="flex-between">
+                                <h3 data-i18n="dashboard.recurringInvoices">Recurring</h3>
+                            </div>
+                            <div class="stat-main">
+                                <h2 class="dash-value" id="dashRecurringCount">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="dash-card key-insights stagger-1">
+                            <div class="card-header">
+                                <h3 data-i18n="dashboard.keyInsights">Key Insights</h3>
+                            </div>
+                            <p class="text-muted" data-i18n="dashboard.allTimeRevenue">All-time Revenue</p>
+                            <h2 class="dash-value" id="dashRevenue">$0 <span class="badge success" id="dashRevenueGrowth">+0%</span></h2>
+                            <div id="dashRevenueChart" style="margin-top:0.5rem;">
+                                <canvas id="dashRevenueChartCanvas" style="height:100%;width:100%;"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="dash-card website-visits stagger-2">
+                            <div class="card-header">
+                                <h3 data-i18n="dashboard.revenue">Revenue</h3>
+                                <div class="revenue-chart-filters" id="revenueChartFilters">
+                                    <button class="filter-btn active" data-range="6m">6M</button>
+                                    <button class="filter-btn" data-range="12m">12M</button>
+                                    <button class="filter-btn" data-range="all">All</button>
+                                </div>
+                            </div>
+                            <div class="revenue-summary" id="revenueSummary">
+                                <div class="revenue-summary-item">
+                                    <span class="revenue-summary-label">This Month</span>
+                                    <span class="revenue-summary-value" id="revenueThisMonth">$0</span>
+                                </div>
+                                <div class="revenue-summary-item">
+                                    <span class="revenue-summary-label">Last Month</span>
+                                    <span class="revenue-summary-value" id="revenueLastMonth">$0</span>
+                                </div>
+                                <div class="revenue-summary-item">
+                                    <span class="revenue-summary-label">Best Month</span>
+                                    <span class="revenue-summary-value" id="revenueBestMonth">$0</span>
+                                </div>
+                            </div>
+                            <div id="revenueChartWrapper" style="margin-top:0.75rem;">
+                                <canvas id="revenueChartSmall"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="dash-card revenue-costs stagger-3">
+                            <div class="card-header">
+                                <h3 data-i18n="dashboard.revenueCosts">Paid vs Outstanding</h3>
+                            </div>
+                            <div id="revenueCostsChart-wrapper"><canvas id="revenueCostsChart"></canvas></div>
+                        </div>
+
+                        <div class="dash-card projected-earnings stagger-4">
+                            <div class="card-header">
+                                <h3>📈 Projected Earnings</h3>
+                                <p class="text-muted text-sm" style="margin-top:0.25rem;">Actual vs Projected (if pending paid)</p>
+                            </div>
+                            <div id="projectedEarningsChart-wrapper"><canvas id="projectedEarningsChart"></canvas></div>
+                        </div>
+
+                        <div class="dash-card current-visits stagger-4">
+                            <div class="card-header">
+                                <h3>📊 A/R Aging</h3>
+                                <p class="text-muted text-sm" style="margin-top:0.25rem;">Accounts Receivable Aging</p>
+                            </div>
+                            <div id="arAgingChart-wrapper"><canvas id="arAgingChart"></canvas></div>
+                        </div>
+
+                        <div class="dash-card current-visits">
+                            <div class="card-header">
+                                <h3 data-i18n="dashboard.statusBreakdown">Status Breakdown</h3>
+                            </div>
+                            <div id="statusChartSmall-wrapper"><canvas id="statusChartSmall"></canvas></div>
+                        </div>
+
+
+                        <div class="dash-card campaign-performance">
+                            <div class="card-header">
+                                <h3 data-i18n="dashboard.topClients">Top Clients</h3>
+                            </div>
+                            <div id="dashTopClients" class="campaign-list"></div>
+                        </div>
+
+                        <div class="dash-card per-client-income-card" style="grid-column: 1 / -1;">
+                            <div class="card-header">
+                                <h3>💰 Income by Client</h3>
+                            </div>
+                            <div id="perClientIncomeChart-wrapper"><canvas id="perClientIncomeChart"></canvas></div>
+                            <div id="perClientIncomeEmpty" style="display:none;padding:2rem;text-align:center;color:var(--text-muted);">
+                                <p>No client income data yet. Create invoices to see per-client income.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+    <!-- History View -->
+    <section id="history" class="page-section">
+        <div class="dashboard-header-banner">
+            <div class="banner-content">
+                <h2>History</h2>
+                <p class="text-muted">View past invoices, check status, and generate reports.</p>
+            </div>
+        </div>
+
+        <div class="history-toolbar">
+            <div class="history-search">
+                <span class="history-search-icon">🔍</span>
+                <input type="text" id="historySearchInput" placeholder="Search by client, number, email..." oninput="window.app && window.app.searchHistory(this.value)">
+            </div>
+            <div class="history-actions">
+                <div class="custom-select">
+                    <select id="historyFilter" onchange="window.app && window.app.filterHistory(this.value)">
+                        <option value="all">All Invoices</option>
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                        <option value="overdue">Overdue</option>
+                        <option value="recurring">Recurring</option>
+                    </select>
+                    <div class="custom-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="historyFilterOptions">
+                        <span class="custom-select-value">Filter Status</span>
+                        <span class="custom-select-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                    </div>
+                    <ul id="historyFilterOptions" class="custom-select-options" role="listbox"></ul>
+                </div>
+                <div class="bulk-actions" id="bulkActions" style="display:none;align-items:center;gap:0.5rem;">
+                    <span id="bulkCount" class="text-sm text-muted">0 selected</span>
+                    <button class="btn btn-danger btn-sm" onclick="window.app && window.app.bulkDelete && window.app.bulkDelete()">🗑️ Delete</button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.app && window.app.bulkExport && window.app.bulkExport()">📤 Export</button>
+                </div>
+                <button class="btn btn-secondary" onclick="window.app && window.app.exportAllInvoices && window.app.exportAllInvoices()">📤 Export All</button>
+            </div>
+        </div>
+
+        <div class="time-filter-bar">
+            <div class="time-filter-buttons" id="timeFilterButtons">
+                <button class="time-filter-btn active" data-range="all" onclick="window.app && window.app.filterByDateRange('all')">All Time</button>
+                <button class="time-filter-btn" data-range="7" onclick="window.app && window.app.filterByDateRange('7')">7 Days</button>
+                <button class="time-filter-btn" data-range="30" onclick="window.app && window.app.filterByDateRange('30')">30 Days</button>
+                <button class="time-filter-btn" data-range="180" onclick="window.app && window.app.filterByDateRange('180')">6 Months</button>
+                <button class="time-filter-btn" data-range="365" onclick="window.app && window.app.filterByDateRange('365')">1 Year</button>
+            </div>
+        </div>
+
+        <div id="monthlyHeatmap" class="monthly-heatmap-container card-bg"></div>
+
+        <div id="historyList" class="card-bg" style="overflow: hidden;"></div>
+
+        <div class="pagination">
+            <span class="text-muted text-sm">Showing&nbsp;<strong id="pageStart">0</strong>&nbsp;&ndash;&nbsp;<strong id="pageEnd">0</strong>&nbsp;of&nbsp;<strong id="pageTotal">0</strong>&nbsp;entries</span>
+            <div class="pagination-actions">
+                <button class="btn btn-secondary btn-sm" onclick="window.app && window.app.prevPage && window.app.prevPage()" disabled>Previous</button>
+                <button class="btn btn-secondary btn-sm" onclick="window.app && window.app.nextPage && window.app.nextPage()" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clients View -->
+    <section id="clients" class="page-section">
+        <div class="dashboard-header-banner">
+            <div class="banner-content">
+                <h2>Manage Clients</h2>
+                <p class="text-muted">Add, edit, and organize your client list.</p>
+            </div>
+        </div>
+
+        <div class="history-toolbar">
+            <div class="history-search" style="max-width: 400px;">
+                <span class="history-search-icon">🔍</span>
+                <input type="text" id="clientSearchInput" placeholder="Search clients..." oninput="window.app && window.app.searchClients(this.value)">
+            </div>
+            <button class="btn btn-primary" onclick="window.app && window.app.addClient && window.app.addClient()">+ Add New Client</button>
+        </div>
+
+        <div id="clientList" class="card-bg" style="overflow: hidden;"></div>
+
+        <div class="pagination">
+            <span class="text-muted text-sm">Showing&nbsp;<strong id="clientPageStart">0</strong>&nbsp;&ndash;&nbsp;<strong id="clientPageEnd">0</strong>&nbsp;of&nbsp;<strong id="clientPageTotal">0</strong>&nbsp;clients</span>
+            <div class="pagination-actions">
+                <button class="btn btn-secondary btn-sm" onclick="window.app && window.app.prevClientPage && window.app.prevClientPage()" disabled>Previous</button>
+                <button class="btn btn-secondary btn-sm" onclick="window.app && window.app.nextClientPage && window.app.nextClientPage()" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+
+
+        <!-- Footer Banner Ad (free tier) -->
+        <div class="ad-slot ad-banner" id="adFooter" aria-label="Advertisement">
+            <div class="ad-label">Advertisement</div>
+            <!-- Google AdSense: Footer Banner 728x90 or responsive -->
+            <!-- <ins class="adsbygoogle" data-ad-client="ca-pub-XXXX" data-ad-slot="XXXX" data-ad-format="horizontal" data-full-width-responsive="true"></ins> -->
+            <div class="ad-placeholder">Ad Space — Footer Banner (728x90)</div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle" aria-describedby="confirmModalMessage" aria-hidden="true">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h2 id="confirmModalTitle">Confirm</h2>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalMessage" style="margin: 0 0 1.5rem; line-height: 1.5;"></p>
+                <label id="confirmModalDontAsk" style="display: none; margin: 0 0 1rem; font-size: 0.875rem; cursor: pointer;">
+                    <input type="checkbox" id="confirmModalDontAskCheckbox"> Don't ask again
+                </label>
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button class="btn btn-secondary" id="confirmModalCancel">Cancel</button>
+                    <button class="btn btn-danger" id="confirmModalOk">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Catalog Modal -->
+    <div id="productCatalogModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="productCatalogModalTitle" aria-hidden="true">
+        <div class="modal-content" style="max-width: 560px;">
+            <div class="modal-header">
+                <h2 id="productCatalogModalTitle" data-i18n="products.catalogTitle">Saved Items</h2>
+                <button class="close-btn" onclick="window.app && window.app.closeProductCatalog && window.app.closeProductCatalog()" aria-label="Close dialog">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <div id="productCatalogList" style="padding: 0.5rem 0;"></div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.5rem; padding-top:1rem; border-top:1px solid var(--border);">
+                <button class="btn btn-secondary" onclick="window.app && window.app.closeProductCatalog && window.app.closeProductCatalog()" data-i18n="common.close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle" aria-hidden="true">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header">
+                <h2 id="authModalTitle" data-i18n="nav.signIn">Sign In</h2>
+                <button class="close-btn" onclick="window.app && window.app.closeAuthUI && window.app.closeAuthUI()" aria-label="Close dialog">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-tabs" id="authTabs">
+                    <button class="auth-tab active" data-tab="login" onclick="window.app && window.app.switchAuthTab && window.app.switchAuthTab('login')">Sign In</button>
+                    <button class="auth-tab" data-tab="register" onclick="window.app && window.app.switchAuthTab && window.app.switchAuthTab('register')">Create Account</button>
+                </div>
+                <form id="loginForm" onsubmit="window.app && window.app.handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" placeholder="you@example.com" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="Your password" required autocomplete="current-password">
+                    </div>
+                    <div id="loginError" class="auth-error" aria-live="polite" aria-atomic="true"></div>
+                    <button type="submit" class="btn btn-primary btn-large" style="width:100%; margin-top: 0.5rem;">Sign In</button>
+                    <div style="text-align:center; margin-top: 1rem;">
+                        <a href="#" onclick="window.app && window.app.showForgotPassword && window.app.showForgotPassword(); return false;" style="font-size:0.85rem;color:var(--text-muted);text-decoration:none;">Forgot password?</a>
+                    </div>
+                                    </form>
+                <form id="forgotPasswordForm" style="display:none;" onsubmit="window.app && window.app.handleForgotPassword(event)">
+                    <div class="form-group">
+                        <label for="forgotEmail">Email</label>
+                        <input type="email" id="forgotEmail" placeholder="you@example.com" required autocomplete="email">
+                    </div>
+                    <div id="forgotPasswordError" class="auth-error" aria-live="polite" aria-atomic="true"></div>
+                    <div id="forgotPasswordSuccess" style="color:var(--success);font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;" aria-live="polite" aria-atomic="true"></div>
+                    <button type="submit" class="btn btn-primary btn-large" style="width:100%; margin-top: 0.5rem;">Send Reset Link</button>
+                    <div style="text-align:center; margin-top: 1rem;">
+                        <a href="#" onclick="window.app && window.app.showForgotPasswordBack && window.app.showForgotPasswordBack(); return false;" style="font-size:0.85rem;color:var(--text-muted);text-decoration:none;">&larr; Back to Sign In</a>
+                    </div>
+                </form>
+                <form id="resetPasswordForm" style="display:none;" onsubmit="window.app && window.app.handleResetPassword(event)">
+                    <input type="hidden" id="resetPasswordToken">
+                    <div class="form-group">
+                        <label for="resetPassword">New Password</label>
+                        <input type="password" id="resetPassword" placeholder="Min 8 characters" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="resetPasswordConfirm">Confirm New Password</label>
+                        <input type="password" id="resetPasswordConfirm" placeholder="Confirm new password" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <div id="resetPasswordError" class="auth-error" aria-live="polite" aria-atomic="true"></div>
+                    <div id="resetPasswordSuccess" style="color:var(--success);font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;" aria-live="polite" aria-atomic="true"></div>
+                    <button type="submit" class="btn btn-primary btn-large" style="width:100%; margin-top: 0.5rem;">Reset Password</button>
+                    <div style="text-align:center; margin-top: 1rem;">
+                        <a href="#" onclick="window.app && window.app.showForgotPasswordBack && window.app.showForgotPasswordBack(); return false;" style="font-size:0.85rem;color:var(--text-muted);text-decoration:none;">&larr; Back to Sign In</a>
+                    </div>
+                </form>
+                <form id="registerForm" style="display:none;" onsubmit="window.app && window.app.handleRegister(event)">
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" placeholder="you@example.com" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" placeholder="Min 8 characters" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPasswordConfirm">Confirm Password</label>
+                        <input type="password" id="registerPasswordConfirm" placeholder="Repeat password" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <div id="registerError" class="auth-error" aria-live="polite" aria-atomic="true"></div>
+                    <button type="submit" class="btn btn-primary btn-large" style="width:100%; margin-top: 0.5rem;">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interstitial Ad Modal (free tier export gate) -->
+    <div id="interstitialAd" class="ad-interstitial" role="dialog" aria-modal="true" aria-label="Advertisement">
+        <div class="ad-interstitial-content">
+            <div class="ad-interstitial-header">
+                <span class="ad-interstitial-badge">FREE TIER</span>
+                <p>Your download will start shortly</p>
+            </div>
+            <div class="ad-interstitial-body">
+                <!-- Google AdSense: Interstitial 300x600 or 320x480 -->
+                <!-- <ins class="adsbygoogle" data-ad-client="ca-pub-XXXX" data-ad-slot="XXXX" data-ad-format="vertical"></ins> -->
+                <div class="ad-placeholder ad-placeholder-lg">Ad Space — Interstitial (300x600)</div>
+            </div>
+            <div class="ad-interstitial-footer">
+                <div class="ad-timer" id="adTimer">5</div>
+                <button class="btn btn-secondary btn-sm" id="adSkipBtn" onclick="window.app && window.app.skipInterstitial && window.app.skipInterstitial()" disabled>Skip Ad &darr;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Typewriter Overlay -->
+    <div id="typewriterOverlay" class="typewriter-overlay" aria-hidden="true">
+        <div class="typewriter-box">
+            <span class="typewriter-text"></span>
+            <span class="typewriter-cursor"></span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+    <script src="js/html2canvas.min.js" defer></script>
+
+    <script src="js/toast.js" defer></script>
+    <script src="js/loading.js" defer></script>
+    <script src="js/globals/window-fix.js"></script>
+    <script type="module" src="js/app.js"></script>
+<script>
+    // Theme toggle function
+    window.toggleTheme = function() {
+        var currentTheme = document.documentElement.getAttribute('data-theme');
+        var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme-mode', newTheme);
+    };
+</script>
+</body>
+</html>

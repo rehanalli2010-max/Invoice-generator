@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History - Invoice Generator</title>
+    <meta name="description" content="View and manage your past invoices with Invoice Generator. Track status, payments, and analytics.">
+    <link rel="stylesheet" href="css/style.css?v=1786400000000">
+    <script>
+        (function(){ var m=localStorage.getItem('theme-mode'); if(m) document.documentElement.setAttribute('data-theme',m); })();
+    </script>
+    <style>
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+        }
+        /* Show this page instantly, without the entrance animation */
+        .dashboard-container,
+        .main-content {
+            animation: none !important;
+        }
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            transition: color 0.2s;
+        }
+        .nav-back:hover { color: var(--text-main); }
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .page-header h1 {
+            font-size: 2.75rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 0.75rem;
+            color: var(--text-main);
+        }
+        .page-header p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 1024px) {
+            .history-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 640px) {
+            .history-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .data-table th:nth-child(1),
+            .data-table td:nth-child(1),
+            .data-table th:nth-child(6),
+            .data-table td:nth-child(6) { display: none; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+        }
+        @media (max-width: 400px) {
+            .history-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .history-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .history-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        .history-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .history-value.history-warning { color: var(--danger); }
+        .history-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 0 0 2rem;
+        }
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            background: var(--bg-card);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .toolbar-search {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        .toolbar-search input {
+            width: 100%;
+            padding: 0.625rem 0.625rem 0.625rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .toolbar-search input:focus { border-color: var(--accent); }
+        .toolbar-search::before {
+            content: "🔍";
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 1;
+            line-height: 1;
+        }
+        .toolbar-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .status-filter {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+        }
+        .status-filter:focus { border-color: var(--accent); }
+        .bulk-bar {
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--accent);
+            color: #fff;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+        .bulk-bar.visible { display: flex; }
+        .table-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .data-table tbody tr:hover { background: var(--bg-secondary); }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .status-paid { background: rgba(34,197,94,0.15); color: #16a34a; }
+        .status-pending { background: rgba(245,158,11,0.15); color: #d97706; }
+        .status-overdue { background: rgba(239,68,68,0.15); color: #dc2626; }
+        .status-draft { background: rgba(107,114,128,0.15); color: #6b7280; }
+        .row-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        .empty-state h3 { margin-bottom: 0.5rem; color: var(--text-main); }
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .pagination strong {
+            margin: 0 0.15rem;
+        }
+        .time-filter-bar {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        .time-filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .time-filter-btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .time-filter-btn:hover {
+            border-color: var(--primary, #5e6ad2);
+            color: var(--text-main);
+            background: var(--bg-secondary);
+        }
+        .time-filter-btn.active {
+            background: var(--primary, #5e6ad2);
+            color: #fff;
+            border-color: var(--primary, #5e6ad2);
+        }
+        .monthly-heatmap-container {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+        .monthly-heatmap-container:empty { display: none; }
+        .heatmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .heatmap-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .heatmap-legend-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin: 0 0.25rem;
+        }
+        .heatmap-legend-cell {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .heatmap-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .heatmap-year-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .heatmap-year-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            min-width: 40px;
+            text-align: right;
+        }
+        .heatmap-months {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 0.35rem;
+            flex: 1;
+        }
+        .heatmap-cell {
+            aspect-ratio: 1.6;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: default;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            min-height: 42px;
+            position: relative;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.08);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .heatmap-cell-empty {
+            background: var(--bg-secondary);
+            opacity: 0.4;
+        }
+        .heatmap-month-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        .heatmap-cell-empty .heatmap-month-label {
+            color: var(--text-muted);
+        }
+        .heatmap-count {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        @media (max-width: 640px) {
+            .time-filter-buttons {
+                width: 100%;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            .time-filter-btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+                padding: 0.4rem 1rem;
+                font-size: 0.8rem;
+            }
+            .heatmap-months { gap: 0.2rem; }
+            .heatmap-cell { min-height: 32px; }
+            .heatmap-month-label { font-size: 0.55rem; }
+            .heatmap-count { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+    <noscript><div style="padding:2rem;text-align:center;background:#fee2e2;color:#dc2626;">JavaScript is required to use this application. Please enable JavaScript in your browser.</div></noscript>
+    <a href="#mainContent" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:99999;padding:0.75rem 1.5rem;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;border-radius:var(--radius-sm);">Skip to main content</a>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 style="cursor: pointer;" onclick="window.location.href='index.html';" title="Go to Home">Invoice Generator</h2>
+                <button class="btn btn-icon sidebar-close-btn" onclick="document.getElementById('sidebar').classList.remove('open')" aria-label="Close sidebar">×</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="sidebar-link" data-page="home">
+                    <span class="sidebar-icon" aria-hidden="true">📊</span>
+                    <span>Home</span>
+                </a>
+                <a href="index.html#invoice" class="sidebar-link" data-page="new-invoice">
+                    <span class="sidebar-icon" aria-hidden="true">📝</span>
+                    <span>New Invoice</span>
+                </a>
+                <a href="history.html" class="sidebar-link active" data-page="history">
+                    <span class="sidebar-icon" aria-hidden="true">📋</span>
+                    <span>History</span>
+                </a>
+                <a href="clients.html" class="sidebar-link" data-page="clients">
+                    <span class="sidebar-icon" aria-hidden="true">👥</span>
+                    <span>Clients</span>
+                </a>
+                <a href="templates.html" class="sidebar-link" id="navTemplates" data-page="templates">
+                    <span class="sidebar-icon" aria-hidden="true">🏢</span>
+                    <span data-i18n="nav.templates">Templates</span>
+                </a>
+                <a href="pricing.html" class="sidebar-link" data-page="pricing">
+                    <span class="sidebar-icon" aria-hidden="true">💎</span>
+                    <span>Pricing</span>
+                </a>
+                <div class="sidebar-divider"></div>
+                <div id="sidebarAuthSection">
+                    <button class="btn btn-primary sidebar-btn" onclick="window.app && window.app.showAuthModal && window.app.showAuthModal()" data-i18n="nav.signIn">Sign In / Sign Up</button>
+                </div>
+            </nav>
+        </aside>
+
+        <div class="dashboard-content">
+            <header class="header bg-transparent border-none">
+                <div class="header-content">
+                    <div class="logo-section">
+                        <button class="btn btn-icon sidebar-toggle-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" title="Menu">☰</button>
+                        <div class="logo-text">
+                            <h1>Invoice History</h1>
+                            <p>View past invoices, check status, and generate reports</p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-icon theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+                            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"/>
+                                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                            </svg>
+                            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content page-container" id="mainContent">
+                <a href="index.html" class="nav-back">← Back to Generator</a>
+
+                <div class="page-header">
+                    <h1>Invoice History</h1>
+                    <p>Track and manage all your invoices in one place.</p>
+                </div>
+
+                <div class="history-grid" id="historyGrid">
+                    <div class="history-card">
+                        <div class="history-label">Total Revenue</div>
+                        <div class="history-value" id="totalRevenue">$0.00</div>
+                    </div>
+                    <div class="history-card">
+                        <div class="history-label">Paid Invoices</div>
+                        <div class="history-value" id="paidCount">0</div>
+                    </div>
+                    <div class="history-card">
+                        <div class="history-label">Pending Invoices</div>
+                        <div class="history-value" id="pendingCount">0</div>
+                    </div>
+                    <div class="history-card">
+                        <div class="history-label">Overdue Invoices</div>
+                        <div class="history-value history-warning" id="overdueCount">0</div>
+                    </div>
+                    <div class="history-card">
+                        <div class="history-label">Total Invoices</div>
+                        <div class="history-value" id="totalInvoices">0</div>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <div class="toolbar-search">
+                        <input type="text" id="searchInput" placeholder="Search by client, invoice number, email...">
+                    </div>
+                    <div class="toolbar-actions">
+                        <select class="status-filter" id="statusFilter">
+                            <option value="all">All Status</option>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                            <option value="overdue">Overdue</option>
+                            <option value="draft">Draft</option>
+                        </select>
+                        <button class="btn btn-secondary" id="exportAllBtn">📤 Export All</button>
+                    </div>
+                </div>
+
+                <div class="time-filter-bar">
+                    <div class="time-filter-buttons" id="timeFilterButtons">
+                        <button class="time-filter-btn active" data-range="all">All Time</button>
+                        <button class="time-filter-btn" data-range="7">7 Days</button>
+                        <button class="time-filter-btn" data-range="30">30 Days</button>
+                        <button class="time-filter-btn" data-range="180">6 Months</button>
+                        <button class="time-filter-btn" data-range="365">1 Year</button>
+                    </div>
+                </div>
+
+                <div id="monthlyHeatmap" class="monthly-heatmap-container"></div>
+
+                <div class="bulk-bar" id="bulkBar">
+                    <span id="bulkCount">0 selected</span>
+                    <button class="btn btn-danger btn-sm" id="bulkDeleteBtn">🗑️ Delete</button>
+                    <button class="btn btn-secondary btn-sm" id="bulkExportBtn">📤 Export</button>
+                    <button class="btn btn-secondary btn-sm" id="bulkClearBtn">Clear Selection</button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:40px;text-align:center;"><input type="checkbox" id="selectAll" aria-label="Select all"></th>
+                                <th>Invoice</th>
+                                <th>Client</th>
+                                <th style="text-align:right;">Amount</th>
+                                <th style="text-align:center;">Status</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" id="pagination">
+                    <span>Showing <strong id="pageStart">0</strong> &ndash; <strong id="pageEnd">0</strong> of <strong id="pageTotal">0</strong> entries</span>
+                    <div class="pagination-actions">
+                        <button class="btn btn-secondary btn-sm" id="prevPageBtn" disabled>Previous</button>
+                        <button class="btn btn-secondary btn-sm" id="nextPageBtn" disabled>Next</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+
+    <script src="js/toast.js" defer></script>
+    <script src="js/loading.js" defer></script>
+    <script>
+    function toggleTheme() {
+        var currentTheme = document.documentElement.getAttribute('data-theme');
+        var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme-mode', newTheme);
+    }
+    (function() {
+        const STORAGE_KEY = 'invoice-generator-invoices';
+        const PAGE_SIZE = 10;
+        let allInvoices = [];
+        let filteredInvoices = [];
+        let currentPage = 1;
+        let selectedIds = new Set();
+        let currentDateRange = 'all';
+
+        function getInvoices() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+            catch { return []; }
+        }
+
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;', '`': '&#96;' };
+            return String(text).replace(/[&<>"'`]/g, m => map[m]);
+        }
+
+        function saveInvoices(invs) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(invs));
+        }
+
+        function getCurrencySymbol(code) {
+            const symbols = { USD:'$', EUR:'€', GBP:'£', JPY:'¥', INR:'₹', CAD:'C$', AUD:'A$' };
+            return symbols[code] || '$';
+        }
+
+        function getStatus(inv) {
+            if (inv.status === 'paid') return 'Paid';
+            const now = new Date();
+            const due = inv.dueDate ? new Date(inv.dueDate) : null;
+            if (due && due < now) return 'Overdue';
+            return 'Pending';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+        }
+
+        function applyDateFilter(invoices) {
+            if (currentDateRange === 'all') return invoices;
+            const days = parseInt(currentDateRange, 10);
+            if (isNaN(days)) return invoices;
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - days);
+            cutoff.setHours(0, 0, 0, 0);
+            return invoices.filter(inv => {
+                const dateStr = inv.invoiceDate || inv.createdAt;
+                if (!dateStr) return false;
+                return new Date(dateStr) >= cutoff;
+            });
+        }
+
+        function renderHeatmap() {
+            const container = document.getElementById('monthlyHeatmap');
+            if (!container) return;
+            if (!allInvoices.length) { container.innerHTML = ''; return; }
+
+            const monthCounts = {};
+            let minDate = null, maxDate = null;
+            const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+            allInvoices.forEach(inv => {
+                const dateStr = inv.invoiceDate || inv.createdAt;
+                if (!dateStr) return;
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return;
+                const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+                monthCounts[key] = (monthCounts[key] || 0) + 1;
+                if (!minDate || d < minDate) minDate = new Date(d);
+                if (!maxDate || d > maxDate) maxDate = new Date(d);
+            });
+
+            if (!minDate || !maxDate) { container.innerHTML = ''; return; }
+            const now = new Date();
+            if (maxDate < now) maxDate = now;
+
+            const months = [];
+            for (let y = minDate.getFullYear(); y <= maxDate.getFullYear(); y++) {
+                const mStart = (y === minDate.getFullYear()) ? minDate.getMonth() : 0;
+                const mEnd = (y === maxDate.getFullYear()) ? maxDate.getMonth() : 11;
+                for (let m = mStart; m <= mEnd; m++) {
+                    const key = y + '-' + String(m+1).padStart(2,'0');
+                    months.push({ year: y, month: m, key, count: monthCounts[key] || 0 });
+                }
+            }
+
+            const maxCount = Math.max(...months.map(m => m.count), 1);
+            const yearGroups = {};
+            months.forEach(m => { if (!yearGroups[m.year]) yearGroups[m.year] = []; yearGroups[m.year].push(m); });
+
+            let html = '<div class="heatmap-header"><h3>Monthly Activity</h3><div class="heatmap-legend"><span class="heatmap-legend-label">Less</span>';
+            [0, 0.25, 0.5, 0.75, 1].forEach(l => {
+                html += '<span class="heatmap-legend-cell" style="opacity:' + (0.15 + l*0.85) + ';background:var(--primary,#5e6ad2);"></span>';
+            });
+            html += '<span class="heatmap-legend-label">More</span></div></div><div class="heatmap-grid">';
+
+            for (const [year, yearMonths] of Object.entries(yearGroups)) {
+                html += '<div class="heatmap-year-row"><span class="heatmap-year-label">' + year + '</span><div class="heatmap-months">';
+                for (let m = 0; m < 12; m++) {
+                    const entry = yearMonths.find(ym => ym.month === m);
+                    if (entry) {
+                        const intensity = entry.count / maxCount;
+                        const opacity = entry.count === 0 ? 0.08 : (0.2 + intensity * 0.8);
+                        html += '<div class="heatmap-cell" title="' + monthNames[m] + ' ' + year + ': ' + entry.count + ' invoice' + (entry.count !== 1 ? 's' : '') + '" style="opacity:' + opacity + ';background:var(--primary,#5e6ad2);"><span class="heatmap-month-label">' + monthNames[m] + '</span><span class="heatmap-count">' + entry.count + '</span></div>';
+                    } else {
+                        html += '<div class="heatmap-cell heatmap-cell-empty"><span class="heatmap-month-label">' + monthNames[m] + '</span></div>';
+                    }
+                }
+                html += '</div></div>';
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderRow(inv) {
+            const status = getStatus(inv);
+            const symbol = getCurrencySymbol(inv.currency);
+            const statusClass = 'status-' + status.toLowerCase();
+            return `<tr data-id="${escapeHtml(inv.id)}">
+                <td style="text-align:center;"><input type="checkbox" class="row-cb" value="${escapeHtml(inv.id)}"></td>
+                <td><strong>${escapeHtml(inv.invoiceNumber) || 'INV-???'}</strong><div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">${formatDate(inv.invoiceDate)}</div></td>
+                <td>${escapeHtml(inv.clientName) || 'Unknown'}<div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">${escapeHtml(inv.clientEmail) || ''}</div></td>
+                <td style="text-align:right;font-variant-numeric:tabular-nums;"><strong>${escapeHtml(symbol)}${escapeHtml((inv.total||0).toFixed(2))}</strong></td>
+                <td style="text-align:center;"><span class="status-badge ${statusClass}">${status}</span></td>
+                <td><div class="row-actions">
+                    <button class="btn btn-primary btn-sm load-btn" data-id="${escapeHtml(inv.id)}">Load</button>
+                    <button class="btn btn-secondary btn-sm dup-btn" data-id="${escapeHtml(inv.id)}">📋</button>
+                    <button class="btn btn-danger btn-sm del-btn" data-id="${escapeHtml(inv.id)}">🗑️</button>
+                </div></td>
+            </tr>`;
+        }
+
+        function render() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFiltered = applyDateFilter(allInvoices);
+
+            filteredInvoices = dateFiltered.filter(inv => {
+                const matchSearch = !search ||
+                    (inv.clientName && inv.clientName.toLowerCase().includes(search)) ||
+                    (inv.invoiceNumber && inv.invoiceNumber.toLowerCase().includes(search)) ||
+                    (inv.clientEmail && inv.clientEmail.toLowerCase().includes(search));
+                const matchStatus = statusFilter === 'all' || getStatus(inv).toLowerCase() === statusFilter;
+                return matchSearch && matchStatus;
+            }).reverse();
+
+            const total = filteredInvoices.length;
+            const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const page = filteredInvoices.slice(start, start + PAGE_SIZE);
+
+            const tbody = document.getElementById('invoiceTableBody');
+            if (page.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>No invoices found</h3>
+                    <p>Create your first invoice to see it here.</p>
+                </td></tr>`;
+            } else {
+                tbody.innerHTML = page.map(renderRow).join('');
+            }
+
+            document.getElementById('pageStart').textContent = total > 0 ? start + 1 : 0;
+            document.getElementById('pageEnd').textContent = Math.min(start + PAGE_SIZE, total);
+            document.getElementById('pageTotal').textContent = total;
+            document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+
+            // Stats based on date-filtered invoices
+            const stats = dateFiltered.reduce((acc, inv) => {
+                const s = getStatus(inv);
+                acc.total += inv.total || 0;
+                acc.count++;
+                if (s === 'Paid') acc.paid++;
+                else if (s === 'Pending') acc.pending++;
+                else if (s === 'Overdue') acc.overdue++;
+                return acc;
+            }, { total:0, count:0, paid:0, pending:0, overdue:0 });
+
+            const sym = dateFiltered.length ? getCurrencySymbol(dateFiltered[0].currency) : '$';
+            document.getElementById('totalRevenue').textContent = sym + stats.total.toFixed(2);
+            document.getElementById('paidCount').textContent = stats.paid;
+            document.getElementById('pendingCount').textContent = stats.pending;
+            document.getElementById('overdueCount').textContent = stats.overdue;
+            document.getElementById('totalInvoices').textContent = stats.count;
+
+            updateBulkUI();
+        }
+
+        function updateBulkUI() {
+            const bar = document.getElementById('bulkBar');
+            if (selectedIds.size > 0) {
+                bar.classList.add('visible');
+                document.getElementById('bulkCount').textContent = selectedIds.size + ' selected';
+            } else {
+                bar.classList.remove('visible');
+            }
+        }
+
+        function deleteInvoice(id) {
+            if (!confirm('Delete this invoice?')) return;
+            allInvoices = allInvoices.filter(i => i.id !== id);
+            saveInvoices(allInvoices);
+            selectedIds.delete(id);
+            render();
+        }
+
+        function duplicateInvoice(id) {
+            const inv = allInvoices.find(i => i.id === id);
+            if (!inv) return;
+            const copy = { ...inv, id: Date.now().toString(36) + Math.random().toString(36).slice(2,7), invoiceNumber: 'INV-' + (allInvoices.length + 1).toString().padStart(4,'0'), status: 'draft' };
+            allInvoices.push(copy);
+            saveInvoices(allInvoices);
+            render();
+        }
+
+        function loadInvoice(id) {
+            const inv = allInvoices.find(i => i.id === id);
+            if (!inv) return;
+            localStorage.setItem('editInvoice', JSON.stringify(inv));
+            window.location.href = 'index.html';
+        }
+
+        function exportCSV(data) {
+            if (!data.length) return alert('No invoices to export');
+            const headers = ['Invoice Number','Client','Email','Amount','Status','Date'];
+            const rows = data.map(inv => [
+                inv.invoiceNumber, inv.clientName, inv.clientEmail,
+                (inv.total||0).toFixed(2), getStatus(inv), inv.invoiceDate
+            ]);
+            const csv = [headers, ...rows].map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+            const blob = new Blob([csv], { type:'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'invoices.csv';
+            a.click();
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; render(); });
+        document.getElementById('statusFilter').addEventListener('change', () => { currentPage = 1; render(); });
+        document.getElementById('timeFilterButtons').addEventListener('click', (e) => {
+            const btn = e.target.closest('.time-filter-btn');
+            if (!btn) return;
+            currentDateRange = btn.dataset.range;
+            currentPage = 1;
+            document.querySelectorAll('#timeFilterButtons .time-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render();
+        });
+        document.getElementById('prevPageBtn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; render(); } });
+        document.getElementById('nextPageBtn').addEventListener('click', () => { currentPage++; render(); });
+        document.getElementById('exportAllBtn').addEventListener('click', () => exportCSV(filteredInvoices));
+        document.getElementById('bulkDeleteBtn').addEventListener('click', () => {
+            if (!confirm('Delete ' + selectedIds.size + ' invoices?')) return;
+            allInvoices = allInvoices.filter(i => !selectedIds.has(i.id));
+            saveInvoices(allInvoices);
+            selectedIds.clear();
+            render();
+        });
+        document.getElementById('bulkExportBtn').addEventListener('click', () => {
+            exportCSV(filteredInvoices.filter(i => selectedIds.has(i.id)));
+        });
+        document.getElementById('bulkClearBtn').addEventListener('click', () => {
+            selectedIds.clear();
+            document.querySelectorAll('.row-cb').forEach(cb => cb.checked = false);
+            document.getElementById('selectAll').checked = false;
+            render();
+        });
+        document.getElementById('selectAll').addEventListener('change', (e) => {
+            document.querySelectorAll('.row-cb').forEach(cb => {
+                cb.checked = e.target.checked;
+                if (e.target.checked) selectedIds.add(cb.value);
+                else selectedIds.delete(cb.value);
+            });
+            render();
+        });
+        document.getElementById('invoiceTableBody').addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            if (btn.classList.contains('load-btn')) loadInvoice(id);
+            else if (btn.classList.contains('dup-btn')) duplicateInvoice(id);
+            else if (btn.classList.contains('del-btn')) deleteInvoice(id);
+        });
+        document.getElementById('invoiceTableBody').addEventListener('change', (e) => {
+            if (e.target.classList.contains('row-cb')) {
+                if (e.target.checked) selectedIds.add(e.target.value);
+                else selectedIds.delete(e.target.value);
+                render();
+            }
+        });
+
+        // Mobile sidebar toggle
+        document.querySelector('.sidebar-toggle-btn')?.addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        // Init
+        allInvoices = getInvoices();
+        render();
+        renderHeatmap();
+    })();
+    </script>
+</body>
+</html>

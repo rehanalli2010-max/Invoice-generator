@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvoiceGen | Stop chasing payments</title>
+    <meta name="description" content="Create professional invoices effortlessly with Invoice Generator. Free, fast, and customizable.">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zinc: {
+                            50: '#fafafa',
+                            100: '#f4f4f5',
+                            200: '#e4e4e7',
+                            300: '#d4d4d8',
+                            400: '#a1a1aa',
+                            500: '#71717a',
+                            600: '#52525b',
+                            700: '#3f3f46',
+                            800: '#27272a',
+                            900: '#18181b',
+                            950: '#09090b',
+                        },
+                        cyan: {
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Alpine.js for interactive elements (scroll/hover animations) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        body {
+            background-color: #09090b; /* zinc-950 */
+            color: #fafafa;
+            overflow-x: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Abstract Glow Orb */
+        .glow-orb {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: rgba(6, 182, 212, 0.1);
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ai-glow-orb {
+            position: absolute;
+            background: linear-gradient(to top right, rgba(6, 182, 212, 0.2), rgba(139, 92, 246, 0.2));
+            filter: blur(80px);
+            border-radius: 50%;
+        }
+
+        /* Card Hover Effects */
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom right, rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.1));
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 0;
+        }
+
+        .feature-card:hover {
+            border-color: #3f3f46; /* zinc-700 */
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Utility animations */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.75; transform: scale(1); }
+            50% { opacity: 0; transform: scale(2); }
+        }
+        .animate-pulseGlow {
+            animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="selection:bg-cyan-500/30 selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                <span class="text-xl font-semibold tracking-tight text-zinc-100">InvoiceGen</span>
+            </div>
+
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
+                <a href="#features" class="hover:text-zinc-100 transition-colors">Features</a>
+                <a href="#demo" class="hover:text-zinc-100 transition-colors">Smart Assistant</a>
+                <a href="#pricing" class="hover:text-zinc-100 transition-colors">Pricing</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="hidden sm:block text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors">Sign in</a>
+                <a href="index.html" class="px-4 py-2 text-sm font-medium bg-gradient-to-r from-cyan-500 to-cyan-600 text-zinc-950 hover:from-cyan-400 hover:to-cyan-500 rounded-full transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)] flex items-center gap-2">
+                    Start Free
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-40 pb-20 md:pt-52 md:pb-32 overflow-hidden" x-data="{ scrolled: false }" x-init="setTimeout(() => scrolled = true, 100)">
+        <!-- Abstract Background Glow -->
+        <div class="glow-orb"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/5 text-sm font-medium text-cyan-400 mb-8 backdrop-blur-sm transition-all duration-700 transform" :class="scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-pulseGlow absolute inline-flex h-full w-full rounded-full bg-cyan-400"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                </span>
+                Invoice Generator v2.0 is live
+            </div>
+
+            <!-- Headline -->
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-[1.1] max-w-4xl mx-auto text-zinc-50 transition-all duration-700 delay-100 transform" :class="scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'">
+                Unleash the power of <br class="hidden md:block"/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-400 to-violet-500">intuitive invoicing.</span>
+            </h1>
+
+            <p class="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed transition-all duration-700 delay-200 transform" :class="scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'">
+                Stop chasing payments and focus on what matters. Create, manage, and get paid faster with intelligent automation designed for modern professionals.
+            </p>
+
+            <!-- HTAs -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-700 delay-300 transform" :class="scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'">
+                <button onclick="openSignupModal()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-cyan-500 to-cyan-600 text-zinc-950 font-semibold rounded-full hover:from-cyan-400 hover:to-cyan-500 transition-all flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(6,182,212,0.3)] active:scale-95">
+                    Start creating free
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+            </div>
+
+            <!-- Product UI Preview -->
+            <div class="mt-20 relative mx-auto max-w-5xl transition-all duration-1000 delay-500 transform animate-float" :class="scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-24'">
+                <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent z-10 top-1/2"></div>
+                <div class="rounded-2xl border border-zinc-800/50 bg-zinc-900/50 p-2 shadow-2xl backdrop-blur-sm overflow-hidden ring-1 ring-white/10 ring-inset">
+                    <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=2670" alt="Dashboard Preview" class="rounded-xl w-full object-cover object-top h-[400px] md:h-[600px] opacity-80" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Bento Grid -->
+    <section id="features" class="py-24 relative border-t border-zinc-900 bg-zinc-950/50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-zinc-50">Everything you need to <br class="hidden md:block"/>manage receivables.</h2>
+                <p class="text-zinc-400 text-lg max-w-xl">A complete toolkit designed to eliminate friction between your work and your wallet.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- Feature 1 - Large Card -->
+                <div class="feature-card col-span-1 md:col-span-2 group bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-8 overflow-hidden relative">
+                    <div class="relative z-10 w-full h-full flex flex-col">
+                        <div class="mb-auto pb-12">
+                            <div class="w-12 h-12 bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center mb-6 shadow-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                            </div>
+                            <h3 class="text-2xl font-semibold text-zinc-100 mb-3">Insights at your fingertips</h3>
+                            <p class="text-zinc-400 text-base leading-relaxed max-w-md">
+                                All your invoicing data in one place. Track revenue, view pending payments, and identify top clients instantly with our powerful dashboard.
+                            </p>
+                        </div>
+
+                        <!-- Abstract UI Representation -->
+                        <div class="w-full bg-zinc-950 rounded-xl border border-zinc-800/80 p-4 pt-6 mt-8 relative overflow-hidden group-hover:border-zinc-700 transition-colors">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 blur-[50px]"></div>
+                            <div class="flex gap-4 relative z-10">
+                                <div class="w-1/3 space-y-3">
+                                    <div class="h-2 w-full bg-zinc-800 rounded-full"></div>
+                                    <div class="h-6 w-3/4 bg-zinc-700 rounded-md"></div>
+                                </div>
+                                <div class="w-2/3 h-24 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg border border-cyan-500/10"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 2 - Tall Card -->
+                <div class="feature-card col-span-1 group bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-8 relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center mb-6 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        </div>
+                        <h3 class="text-2xl font-semibold text-zinc-100 mb-3">Real-time Alerts</h3>
+                        <p class="text-zinc-400 text-base leading-relaxed">
+                            Know the exact moment a client views your invoice or makes a payment.
+                        </p>
+
+                        <div class="mt-12 space-y-4">
+                            <div class="bg-zinc-950/80 border border-zinc-800 p-4 rounded-xl flex items-start gap-4 transform transition-all group-hover:-translate-y-1">
+                                <div class="w-2 h-2 rounded-full bg-green-400 mt-2 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                                <div>
+                                    <p class="text-sm font-medium text-zinc-100">Invoice #104 Paid</p>
+                                    <p class="text-xs text-zinc-500 mt-1">Acme Corp just paid $4,200</p>
+                                </div>
+                            </div>
+                            <div class="bg-zinc-950/80 border border-zinc-800 p-4 rounded-xl flex items-start gap-4 transform transition-all group-hover:-translate-y-1 group-hover:opacity-90">
+                                <div class="w-2 h-2 rounded-full bg-blue-400 mt-2 shadow-[0_0_8px_rgba(96,165,250,0.6)]"></div>
+                                <div>
+                                    <p class="text-sm font-medium text-zinc-100">Invoice Viewed</p>
+                                    <p class="text-xs text-zinc-500 mt-1">Globex viewed #105</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card col-span-1 group bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-8 relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center mb-6 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-violet-400"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-zinc-100 mb-3">Smart Templates</h3>
+                        <p class="text-zinc-400 text-sm leading-relaxed">
+                            Choose from professional themes that automatically calculate taxes, discounts, and totals without manual math.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card col-span-1 group bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-8 relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center mb-6 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-zinc-100 mb-3">Multi-Currency</h3>
+                        <p class="text-zinc-400 text-sm leading-relaxed">
+                            Invoice global clients effortlessly. Deep support for USD, EUR, GBP, CAD, AUD, INR, and JPY currencies.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card col-span-1 group bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-8 flex flex-col justify-between relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center mb-6 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-zinc-100 mb-3">You're in control</h3>
+                        <p class="text-zinc-400 text-sm leading-relaxed">
+                            Export to JSON/CSV, save PDFs locally, or persist data in your browser. Complete data ownership always.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 flex items-center gap-2 text-xs text-zinc-500 relative z-10">
+                        <kbd class="px-2 py-1 bg-zinc-950 border border-zinc-800 flex items-center justify-center rounded text-zinc-300 font-mono">⌘</kbd>
+                        <span>+</span>
+                        <kbd class="px-2 py-1 bg-zinc-950 border border-zinc-800 flex items-center justify-center rounded text-zinc-300 font-mono">K</kbd>
+                        <span class="ml-2 font-medium">to open command menu</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- AI / Smart Features Section -->
+    <section id="demo" class="py-24 border-y border-zinc-800/50 bg-gradient-to-b from-zinc-950 to-zinc-900/30 overflow-hidden relative">
+        <div class="absolute -right-1/4 top-1/4 w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <div class="max-w-5xl mx-auto px-6 relative z-10 text-center">
+            <div class="flex flex-col items-center gap-10">
+                <!-- Text Content -->
+                <div class="w-full space-y-8">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-500/30 bg-sky-500/10 text-sm font-medium text-sky-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Smart Assistant
+                    </div>
+                    <h2 class="text-4xl md:text-6xl font-bold tracking-tight leading-tight text-zinc-50">
+                        Say goodbye to manual entry.
+                    </h2>
+                    <p class="text-lg text-zinc-400 max-w-2xl mx-auto">
+                        Our smart system remembers your clients, predicts line items based on history, and flags missing essential information before you send.
+                    </p>
+
+                    <ul class="flex flex-col sm:flex-row justify-center gap-6 pt-4">
+                        <li class="flex items-center gap-3 text-zinc-300">
+                            <div class="w-6 h-6 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-400"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                            </div>
+                            <span>Saved client directory for 1-click loading</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-zinc-300">
+                            <div class="w-6 h-6 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-400"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                            </div>
+                            <span>Auto-calculating tax and discount logic</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-zinc-300">
+                            <div class="w-6 h-6 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-400"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                            </div>
+                            <span>Smart required-field highlighting</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-24 relative border-t border-zinc-800/50 bg-gradient-to-b from-zinc-900/30 to-zinc-950 overflow-hidden">
+        <div class="absolute -left-1/4 top-1/3 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <div class="max-w-6xl mx-auto px-6 relative z-10">
+            <!-- Header -->
+            <div class="text-center mb-14">
+                <span class="inline-block text-sm font-bold tracking-[0.12em] uppercase text-cyan-400 mb-4">Pricing</span>
+                <h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-4 text-zinc-50">
+                    Pricing that grows <em class="not-italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-300">with you</em>
+                </h2>
+                <p class="text-lg text-zinc-400 max-w-xl mx-auto leading-relaxed">
+                    Choose an affordable plan that's packed with the best features for engaging your audience, creating customer loyalty, and driving sales.
+                </p>
+            </div>
+
+            <!-- Billing Toggle -->
+            <div class="flex items-center justify-center gap-4 mb-4">
+                <span id="lp-labelMonthly" class="text-sm font-semibold text-zinc-100 cursor-pointer select-none" onclick="lpSetBilling(false)">Monthly</span>
+                <label class="relative inline-block w-12 h-[26px] cursor-pointer">
+                    <input type="checkbox" id="lp-billingToggle" onchange="lpToggleBilling()" class="sr-only peer"/>
+                    <span class="absolute inset-0 bg-zinc-700 rounded-full transition-colors peer-checked:bg-cyan-500"></span>
+                    <span class="absolute left-1 top-1 w-[18px] h-[18px] bg-white rounded-full shadow transition-transform peer-checked:translate-x-[22px]"></span>
+                </label>
+                <span id="lp-labelYearly" class="text-sm font-semibold text-zinc-500 cursor-pointer select-none flex items-center gap-2" onclick="lpSetBilling(true)">
+                    Yearly
+                    <span class="text-[0.65rem] font-bold uppercase tracking-wider bg-cyan-500 text-zinc-950 px-2 py-0.5 rounded-full">Save up to 17%</span>
+                </span>
+            </div>
+
+            <!-- Currency Notice -->
+            <div id="lp-currencyNotice" class="text-center text-sm text-zinc-500 mb-10 min-h-[1.2em]"></div>
+
+            <!-- Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+
+                <!-- Freelancer -->
+                <div class="bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-8 flex flex-col gap-6 transition-all duration-300 hover:border-zinc-700 hover:-translate-y-1">
+                    <div>
+                        <div class="text-lg font-bold text-zinc-100 mb-1">Freelancer</div>
+                        <div class="text-sm text-zinc-400 leading-relaxed">The essentials to provide your best work for clients.</div>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-xl font-bold text-zinc-100" id="lp-sym0"></span>
+                        <span class="text-4xl font-extrabold tracking-tight text-zinc-100" id="lp-price0">Free</span>
+                        <span class="text-sm text-zinc-500 font-medium" id="lp-period0"></span>
+                    </div>
+                    <ul class="flex flex-col gap-3 flex-1">
+                        <li class="flex items-center gap-3 text-sm text-zinc-300">
+                            <span class="w-4 h-4 min-w-[16px] rounded-full bg-cyan-500 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M6.5 11.5L3 8l1.06-1.06L6.5 9.38l5.44-5.44L13 5l-6.5 6.5z"/></svg>
+                            </span>
+                            20 invoices per day
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-300">
+                            <span class="w-4 h-4 min-w-[16px] rounded-full bg-cyan-500 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M6.5 11.5L3 8l1.06-1.06L6.5 9.38l5.44-5.44L13 5l-6.5 6.5z"/></svg>
+                            </span>
+                            48-hour support response time
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-300">
+                            <span class="w-4 h-4 min-w-[16px] rounded-full bg-cyan-500 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M6.5 11.5L3 8l1.06-1.06L6.5 9.38l5.44-5.44L13 5l-6.5 6.5z"/></svg>
+                            </span>
+                            Ad supported
+                        </li>
+                    </ul>
+                    <a href="index.html" class="block w-full py-3 text-center text-sm font-semibold rounded-xl border border-zinc-700 text-zinc-100 hover:border-cyan-500/50 hover:text-cyan-400 transition-all">Get started</a>
+                </div>
+
+                <!-- Startup (Most Popular) -->
+                <div class="relative bg-zinc-900/80 border-2 border-cyan-500 rounded-2xl p-8 flex flex-col gap-6 shadow-[0_0_30px_rgba(6,182,212,0.15)] md:-translate-y-2 transition-all duration-300 hover:-translate-y-3">
+                    <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-cyan-500 text-zinc-950 text-[0.7rem] font-bold uppercase tracking-wider px-4 py-1 rounded-full">Most popular</span>
+                    <div>
+                        <div class="text-lg font-bold text-cyan-400 mb-1">Startup</div>
+                        <div class="text-sm text-zinc-400 leading-relaxed">A plan that scales with your rapidly growing business.</div>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-xl font-bold text-zinc-100" id="lp-sym1"></span>
+                        <span class="text-4xl font-extrabold tracking-tight text-zinc-100" id="lp-price1">300</span>
+                        <span class="text-sm text-zinc-500 font-medium" id="lp-period1">/month</span>
+                    </div>
+                    <ul class="flex flex-col gap-3 flex-1">
+                        <li class="flex items-center gap-3 text-sm text-zinc-300">
+                            <span class="w-4 h-4 min-w-[16px] rounded-full bg-cyan-500 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M6.5 11.5L3 8l1.06-1.06L6.5 9.38l5.44-5.44L13 5l-6.5 6.5z"/></svg>
+                            </span>
+                            500 invoices per day
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-300">
+                            <span class="w-4 h-4 min-w-[16px] rounded-full bg-cyan-500 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M6.5 11.5L3 8l1.06-1.06L6.5 9.38l5.44-5.44L13 5l-6.5 6.5z"/></svg>
+                            </span>
+                            24-hour support response time
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-300">
+                            <span class="w-4 h-4 min-w-[16px] rounded-full bg-cyan-500 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M6.5 11.5L3 8l1.06-1.06L6.5 9.38l5.44-5.44L13 5l-6.5 6.5z"/></svg>
+                            </span>
+                            No ads
+                        </li>
+                    </ul>
+                    <a href="index.html" class="block w-full py-3 text-center text-sm font-semibold rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-600 text-zinc-950 hover:from-cyan-400 hover:to-cyan-500 transition-all shadow-[0_0_15px_rgba(6,182,212,0.25)] active:scale-95">Buy plan</a>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-8 flex flex-col gap-6 transition-all duration-300 hover:border-zinc-700 hover:-translate-y-1">
+                    <div>
+                        <div class="text-lg font-bold text-zinc-100 mb-1">Enterprise</div>
+                        <div class="text-sm text-zinc-400 leading-relaxed">Dedicated support and infrastructure for your company.</div>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-xl font-bold text-zinc-100" id="lp-sym2"></span>
+                        <span class="text-4xl font-extrabold tracking-tight text-zinc-100" id="lp-price2">600</span>
+                        <span class="text-sm text-zinc-500 font-medium" id="lp-period2">/month</span>
+                    </div>
+                    <ul class="flex flex-col gap-3 flex-1">
+                        <li class="flex items-center gap-3 text-sm text-zinc-300">
+                            <span class="w-4 h-4 min-w-[16px] rounded-full bg-cyan-500 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M6.5 11.5L3 8l1.06-1.06L6.5 9.38l5.44-5.44L13 5l-6.5 6.5z"/></svg>
+                            </span>
+                            Unlimited invoices
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-300">
+                            <span class="w-4 h-4 min-w-[16px] rounded-full bg-cyan-500 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M6.5 11.5L3 8l1.06-1.06L6.5 9.38l5.44-5.44L13 5l-6.5 6.5z"/></svg>
+                            </span>
+                            12-hour, dedicated support response time
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-300">
+                            <span class="w-4 h-4 min-w-[16px] rounded-full bg-cyan-500 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M6.5 11.5L3 8l1.06-1.06L6.5 9.38l5.44-5.44L13 5l-6.5 6.5z"/></svg>
+                            </span>
+                            No ads
+                        </li>
+                    </ul>
+                    <a href="index.html" class="block w-full py-3 text-center text-sm font-semibold rounded-xl border border-zinc-700 text-zinc-100 hover:border-cyan-500/50 hover:text-cyan-400 transition-all">Buy plan</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-32 relative overflow-hidden border-t border-zinc-900">
+        <div class="absolute inset-0 bg-cyan-500/5"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-r from-cyan-500/20 to-violet-500/20 blur-[100px] pointer-events-none"></div>
+
+        <div class="max-w-4xl mx-auto px-6 relative z-10 text-center">
+            <h2 class="text-4xl md:text-5xl font-bold tracking-tight mb-8 text-zinc-50">
+                See where financial automation <br class="hidden sm:block"/>can take your business.
+            </h2>
+            <p class="text-lg text-zinc-400 mb-10 max-w-2xl mx-auto">
+                Join thousands of freelancers, agencies, and small businesses who get paid faster with InvoiceGen. No credit card required.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="index.html" class="w-full sm:w-auto px-8 py-4 bg-zinc-100 text-zinc-950 font-semibold rounded-full hover:bg-white transition-all text-base shadow-[0_0_20px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2">
+                    Create your first invoice
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-zinc-800/80 bg-zinc-950 py-12 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                <span class="text-lg font-semibold tracking-tight text-zinc-100">InvoiceGen</span>
+            </div>
+
+            <div class="flex gap-8 text-sm text-zinc-400">
+                <a href="#" class="hover:text-zinc-100 transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-zinc-100 transition-colors">Terms of Service</a>
+                <a href="#" class="hover:text-zinc-100 transition-colors">Contact</a>
+            </div>
+
+            <div class="text-sm text-zinc-500 flex items-center gap-2">
+                © 2026 InvoiceGen. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.documentElement.setAttribute('data-theme', 'dark');
+    </script>
+    <!-- Sign Up Modal -->
+    <div id="signup-modal" onclick="handleModalBackdrop(event)" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none!important; opacity:0; transition: opacity 0.25s ease;">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div id="signup-card" class="relative bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-md p-8 ring-1 ring-white/5" style="transform: scale(0.92) translateY(16px); transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease; opacity:0;">
+            <!-- Close -->
+            <button onclick="closeSignupModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-200 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+
+            <!-- Header -->
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-950"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-zinc-100 leading-tight">Create your account</p>
+                    <p class="text-xs text-zinc-500">Free forever. No credit card required.</p>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <form onsubmit="handleSignup(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1.5">Full name</label>
+                    <input type="text" placeholder="John Doe" required class="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 transition-all"/>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1.5">Email address</label>
+                    <input type="email" placeholder="you@example.com" required class="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 transition-all"/>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1.5">Password</label>
+                    <input type="password" placeholder="••••••••" required class="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 transition-all"/>
+                </div>
+                <button type="submit" class="w-full mt-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-zinc-950 font-semibold rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.25)] active:scale-95">
+                    Sign up — it's free
+                </button>
+            </form>
+
+            <p class="text-center text-xs text-zinc-600 mt-5">Already have an account? <a href="index.html" class="text-cyan-400 hover:text-cyan-300 transition-colors">Sign in</a></p>
+        </div>
+    </div>
+
+    <script>
+        function openSignupModal() {
+            var modal = document.getElementById('signup-modal');
+            var card = document.getElementById('signup-card');
+            modal.style.setProperty('display', 'flex', 'important');
+            document.body.style.overflow = 'hidden';
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    modal.style.opacity = '1';
+                    card.style.opacity = '1';
+                    card.style.transform = 'scale(1) translateY(0)';
+                });
+            });
+        }
+        function closeSignupModal() {
+            var modal = document.getElementById('signup-modal');
+            var card = document.getElementById('signup-card');
+            modal.style.opacity = '0';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.92) translateY(16px)';
+            setTimeout(function() {
+                modal.style.setProperty('display', 'none', 'important');
+                document.body.style.overflow = '';
+            }, 250);
+        }
+        function handleModalBackdrop(e) {
+            if (e.target === document.getElementById('signup-modal') || e.target === document.getElementById('signup-modal').querySelector('.absolute')) {
+                closeSignupModal();
+            }
+        }
+        function handleSignup(e) {
+            e.preventDefault();
+            window.location.href = 'index.html';
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSignupModal();
+        });
+
+        // ── Landing Page Pricing Logic ──────────────────────────────────
+        var lpBase = { freelancer: 0, startup: 300, enterprise: 600 };
+        var lpYearlyBase = { freelancer: 0, startup: 2500, enterprise: 6000 };
+        var lpIsYearly = false;
+        var lpCurrency = null;
+        var lpCountryName = null;
+
+        var LP_CURRENCIES = {
+            IN: { symbol: '₹', code: 'INR', rate: 1, dec: 0 },
+            PK: { symbol: 'Rs', code: 'PKR', rate: 3.5, dec: 0 },
+            BD: { symbol: '৳', code: 'BDT', rate: 1.3, dec: 0 },
+            LK: { symbol: 'Rs', code: 'LKR', rate: 3.8, dec: 0 },
+            NP: { symbol: 'Rs', code: 'NPR', rate: 1.6, dec: 0 },
+            US: { symbol: '$', code: 'USD', rate: 0.012, dec: 2 },
+            CA: { symbol: 'CA$', code: 'CAD', rate: 0.016, dec: 2 },
+            AU: { symbol: 'A$', code: 'AUD', rate: 0.018, dec: 2 },
+            GB: { symbol: '£', code: 'GBP', rate: 0.0095, dec: 2 },
+            DE: { symbol: '€', code: 'EUR', rate: 0.011, dec: 2 },
+            FR: { symbol: '€', code: 'EUR', rate: 0.011, dec: 2 },
+            IT: { symbol: '€', code: 'EUR', rate: 0.011, dec: 2 },
+            ES: { symbol: '€', code: 'EUR', rate: 0.011, dec: 2 },
+            NL: { symbol: '€', code: 'EUR', rate: 0.011, dec: 2 },
+            AE: { symbol: 'AED', code: 'AED', rate: 0.044, dec: 2 },
+            SA: { symbol: 'SAR', code: 'SAR', rate: 0.045, dec: 2 },
+            JP: { symbol: '¥', code: 'JPY', rate: 1.8, dec: 0 },
+            CN: { symbol: '¥', code: 'CNY', rate: 0.087, dec: 2 },
+            KR: { symbol: '₩', code: 'KRW', rate: 16, dec: 0 },
+            SG: { symbol: 'S$', code: 'SGD', rate: 0.016, dec: 2 },
+            MY: { symbol: 'RM', code: 'MYR', rate: 0.056, dec: 2 },
+            ID: { symbol: 'Rp', code: 'IDR', rate: 192, dec: 0 },
+            TH: { symbol: '฿', code: 'THB', rate: 0.42, dec: 2 },
+            NG: { symbol: '₦', code: 'NGN', rate: 18, dec: 0 },
+            ZA: { symbol: 'R', code: 'ZAR', rate: 0.22, dec: 2 },
+            KE: { symbol: 'KSh', code: 'KES', rate: 1.56, dec: 0 },
+            BR: { symbol: 'R$', code: 'BRL', rate: 0.062, dec: 2 },
+            MX: { symbol: 'MX$', code: 'MXN', rate: 0.21, dec: 2 },
+        };
+        var LP_DEFAULT_CURRENCY = { symbol: '$', code: 'USD', rate: 0.012, dec: 2 };
+
+        function lpSetBilling(yearly) {
+            document.getElementById('lp-billingToggle').checked = yearly;
+            lpToggleBilling();
+        }
+        function lpToggleBilling() {
+            lpIsYearly = document.getElementById('lp-billingToggle').checked;
+            document.getElementById('lp-labelMonthly').classList.toggle('text-zinc-100', !lpIsYearly);
+            document.getElementById('lp-labelMonthly').classList.toggle('text-zinc-500', lpIsYearly);
+            document.getElementById('lp-labelYearly').classList.toggle('text-zinc-100', lpIsYearly);
+            document.getElementById('lp-labelYearly').classList.toggle('text-zinc-500', !lpIsYearly);
+            if (lpCurrency) lpApplyPrices(lpCurrency, lpCountryName);
+        }
+        function lpFormatPrice(inrAmount, currency, yearly) {
+            if (inrAmount === 0) return { symbol: '', amount: 'Free', period: '' };
+            var amt = yearly ? inrAmount / 12 : inrAmount;
+            var converted = amt * currency.rate;
+            var display = currency.dec === 0
+                ? Math.round(converted).toLocaleString()
+                : converted.toFixed(currency.dec);
+            return { symbol: currency.symbol, amount: display, period: yearly ? '/month, billed yearly' : '/month' };
+        }
+        function lpApplyPrices(currency, countryName) {
+            lpCurrency = currency;
+            lpCountryName = countryName;
+            var prices = lpIsYearly ? lpYearlyBase : lpBase;
+            var plans = [
+                { base: prices.freelancer, sym: 'lp-sym0', price: 'lp-price0', period: 'lp-period0' },
+                { base: prices.startup, sym: 'lp-sym1', price: 'lp-price1', period: 'lp-period1' },
+                { base: prices.enterprise, sym: 'lp-sym2', price: 'lp-price2', period: 'lp-period2' },
+            ];
+            plans.forEach(function(p) {
+                var f = lpFormatPrice(p.base, currency, lpIsYearly);
+                document.getElementById(p.sym).textContent = f.symbol;
+                document.getElementById(p.price).textContent = f.amount;
+                document.getElementById(p.period).textContent = f.period;
+            });
+            var notice = document.getElementById('lp-currencyNotice');
+            if (countryName) {
+                notice.textContent = 'Prices shown in ' + currency.code + ' for ' + countryName;
+            }
+        }
+        (async function() {
+            lpApplyPrices(LP_CURRENCIES['IN'], null);
+            try {
+                var res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(4000) });
+                var data = await res.json();
+                var cc = (data.country_code || '').toUpperCase();
+                lpApplyPrices(LP_CURRENCIES[cc] || LP_DEFAULT_CURRENCY, data.country_name || cc);
+            } catch(e) {
+                document.getElementById('lp-currencyNotice').textContent = 'Prices shown in INR';
+            }
+        })();
+    </script>
+
+</body>
+</html>
